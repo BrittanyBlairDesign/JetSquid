@@ -5,11 +5,13 @@ using Microsoft.Xna.Framework;
 public class Terrain:BaseGameObject
 {
     protected float SCROLLING_SPEED = -2.0f;
-    protected bool isSCROLL_HORIZONTAL = true;
-    public Terrain(Texture2D texture)
+    protected Vector2 SCROLLING_DIRECTION;
+    public Terrain(Texture2D texture, float speed = 0.0f, Direction direction = Direction.STOP)
     {
         _texture = texture;
         _position = new Vector2(0, 0);
+        SCROLLING_SPEED = speed;
+        SCROLLING_DIRECTION = new Directions().GetDirection(direction);
     }
     
     public override void Render(SpriteBatch spriteBatch)
@@ -33,17 +35,10 @@ public class Terrain:BaseGameObject
             }
         }
         
-        if(isSCROLL_HORIZONTAL)
-        {
-            _position.X = (int)(_position.X + SCROLLING_SPEED) % _texture.Width;
-        }
-        else
-        {
-            _position.Y = (int)(_position.Y + SCROLLING_SPEED) % _texture.Height;
-        }
-        
-    }
 
-    
+        Vector2 velocity = new Vector2((SCROLLING_SPEED * SCROLLING_DIRECTION.X) % _texture.Width,
+                                       (SCROLLING_SPEED * SCROLLING_DIRECTION.Y) % _texture.Height);
+        _position += velocity;  
+    }
 }
 
