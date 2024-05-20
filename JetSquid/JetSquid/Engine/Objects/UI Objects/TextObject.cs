@@ -3,7 +3,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-
+namespace Engine.Objects.UI;
 public class TextObject : BaseGameObject
 {
     public string text;

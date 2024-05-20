@@ -10,6 +10,71 @@
 
 #-------------------------------- References --------------------------------#
 
+/reference:..\..\..\..\.nuget\packages\monogame.extended.content.pipeline\3.8.0\tools\MonoGame.Extended.Content.Pipeline.dll
+/reference:..\..\..\..\..\CustomEngine\Engine\CustomPipelineProjects\SpiteSheetAnimation\SpriteSheetAnimationPipelineExtension\bin\Debug\net6.0\SpriteSheetAnimationPipelineExtension.dll
 
 #---------------------------------- Content ---------------------------------#
+
+#begin JetSquid/Animation/Player/SquidAnimatedSpriteSheet.png
+/importer:SpriteSheetAnimationImporter
+/processor:SpritesheetAnimationProcessor
+/processorParam:_rows=5
+/processorParam:_columns=6
+/processorParam:_width=1308
+/processorParam:_height=845
+/processorParam:_frameRate=12
+/processorParam:_AnimationNames=Walk,JumpNoInk,Hover,Land,JumpWithInk
+/processorParam:frameCount=6,5,5,4,3
+/processorParam:_spriteWidth=218
+/processorParam:_spriteHeight=169
+/processorParam:identifier=JetSquid.Anim2DTypeReader, JetSquid
+/build:JetSquid/Animation/Player/SquidAnimatedSpriteSheet.png
+
+#begin JetSquid/UI/ExitButtton.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:JetSquid/UI/ExitButtton.png
+
+#begin JetSquid/UI/MenuBackground.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:JetSquid/UI/MenuBackground.png
+
+#begin JetSquid/UI/MenuTitleFullSzie.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:JetSquid/UI/MenuTitleFullSzie.png
+
+#begin JetSquid/UI/StartButtton.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:JetSquid/UI/StartButtton.png
 

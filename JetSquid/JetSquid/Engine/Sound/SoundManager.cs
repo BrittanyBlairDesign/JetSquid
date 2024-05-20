@@ -1,10 +1,9 @@
 ﻿
-
-
 using Microsoft.Xna.Framework.Audio;
 using System;
 using System.Collections.Generic;
-using System.Security.Cryptography.X509Certificates;
+using Engine.States;
+namespace Engine.Sound;
 
 public class SoundManager
 {
@@ -24,13 +23,14 @@ public class SoundManager
     public void PlaySoundTrack()
     {
         var nbTracks = _soundTracks.Count;
-        var currentTrack = _soundTracks[_soundTrackIndex];
+
         if (nbTracks <= 0)
         {
             return;
         }
 
-        
+        var currentTrack = _soundTracks[_soundTrackIndex];
+
         var nextTrack = _soundTracks[(_soundTrackIndex + 1) % nbTracks];
 
         if(currentTrack.State == SoundState.Stopped)

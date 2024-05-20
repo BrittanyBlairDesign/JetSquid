@@ -6,7 +6,15 @@ using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
+using Engine.Objects;
+using Engine.Input;
+using Engine.Sound;
+using Microsoft.Xna.Framework.Input;
+using Engine.Components.Collision;
 
+
+
+namespace Engine.States;
 public abstract class BaseGameState
 {
     protected readonly List<BaseGameObject> _gameObjects = new List<BaseGameObject>();
@@ -39,6 +47,7 @@ public abstract class BaseGameState
 
         SetInputManager();
     }
+
 
     protected Texture2D LoadTexture(string textureName)
     {
@@ -97,7 +106,7 @@ public abstract class BaseGameState
         foreach (var gameObject in _gameObjects.OrderBy(a => a.zIndex))
         {
             gameObject.Render(spriteBatch);
-        }
+        }     
     }
 
 }

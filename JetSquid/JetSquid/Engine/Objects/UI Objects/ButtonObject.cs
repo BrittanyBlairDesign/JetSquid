@@ -4,51 +4,68 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using System.Diagnostics;
-using System.Collections.Generic;
 
+using Engine.Components.Collision;
+namespace Engine.Objects.UI;
 public class ButtonObject : BaseGameObject
 {
 
-    protected Color _color;
-    private bool isDebug = false;
+    protected Color _color = Color.White;
 
-    public ButtonObject(Texture2D texture, Vector2 location)
+    public ButtonObject(Texture2D texture, Vector2 location, int offsetX = 0 , int offsetY = 0, int offsetWidth = 0, int offsetHeight = 0)
     {
         this._texture = texture;
         this.Position = location - new Vector2(Width / 2, 0);
+
+        Vector2 offset = new Vector2(offsetX + Position.X, offsetY + Position.Y);
+        BoundingBox2D collision = new BoundingBox2D(offset, Width + offsetWidth, Height + offsetHeight);
+        BoundingBoxes.Add(collision);
+        _Debug = true;
     }
 
-    public ButtonObject(GraphicsDevice graphics, Texture2D texture, Vector2 location)
+    public ButtonObject(GraphicsDevice graphics, Texture2D texture, Vector2 location, int offsetX = 0 , int offsetY = 0)
     {
         this._texture = texture;
         this.Position = location - new Vector2(Width / 2, 0);
 
-        isDebug = true;
+        Vector2 offset = new Vector2(offsetX + Position.X, offsetY + Position.Y);
 
+
+        BoundingBox2D collision = new BoundingBox2D(offset, _texture.Width, _texture.Height);
+        BoundingBoxes.Add(collision);
+
+        _Debug = true;
     }
 
     public virtual bool isHovering()
     {
         MouseState state = Mouse.GetState();
-        if (BoundingBoxes[0].Rectangle.Contains(state.Position))
+        foreach (BoundingBox2D box in BoundingBoxes)
         {
-            _color = Color.WhiteSmoke;
             
-            return true;
+
+            Rectangle rect = box.Rectangle;
+            if (rect.Contains(state.Position))
+            {
+                _color = Color.Red;
+                Trace.WriteLine(" Mouse is hovering over Button.");
+                return true;
+            }
+            else
+            {
+                Trace.WriteLine("Mouse Position = " + state.Position);
+                _color = Color.White;
+            }
         }
-        else
-        {
-            Trace.WriteLine("Mouse Position = " + state.Position);
-            _color = Color.White;
-            return false;
-        }
+
+        return false;
     }
 
     public override void Render(SpriteBatch spriteBatch)
     {
         spriteBatch.Draw(_texture, _position, _color);
         
-        if(_Debug)
+        if(_Debug )
         {
             RenderBoundingBoxes(spriteBatch);
         }

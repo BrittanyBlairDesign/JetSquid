@@ -1,7 +1,7 @@
 ﻿
 using Microsoft.Xna.Framework;
 
-
+namespace Engine.Particles;
 public abstract class EmitterParticleState
 {
     private RandomNumberGenerator _rand = new RandomNumberGenerator();

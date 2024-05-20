@@ -1,8 +1,11 @@
 ﻿
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
-using System;
 
+using Engine.Objects;
+using Engine.Input;
+
+namespace Engine.States;
 public class SplashState : BaseGameState
 {
     public override void LoadContent()

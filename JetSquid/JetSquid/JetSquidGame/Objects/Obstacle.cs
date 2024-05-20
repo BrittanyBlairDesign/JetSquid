@@ -2,11 +2,11 @@
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-
+using Engine.Objects;
 
 namespace JetSquid;
 
-public class Obstacle : PlayerSprite
+public class Obstacle : SpriteObject
 {
     public Obstacle(Texture2D texture, bool debug = false) :
               base(texture, debug)

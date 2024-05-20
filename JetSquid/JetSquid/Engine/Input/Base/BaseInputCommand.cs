@@ -4,5 +4,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
 
-public class BaseInputCommand {}
+namespace Engine.Input;
+
+    public class BaseInputCommand {}
 

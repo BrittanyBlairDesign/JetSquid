@@ -1,7 +1,7 @@
 ﻿
 using Microsoft.Xna.Framework;
-using System;
 
+namespace Engine.Particles;
 public class Particle
 {
     public Vector2 Position { get; private set; }

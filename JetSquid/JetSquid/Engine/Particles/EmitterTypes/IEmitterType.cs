@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 
+namespace Engine.Particles;
 public interface IEmitterType
 {
     Vector2 GetParticleDirection();

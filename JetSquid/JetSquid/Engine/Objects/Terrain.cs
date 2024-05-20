@@ -1,7 +1,8 @@
 ﻿using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework;
+using Engine.Components.Physics;
 
-
+namespace Engine.Objects;
 public class Terrain:BaseGameObject
 {
     protected float SCROLLING_SPEED = -2.0f;

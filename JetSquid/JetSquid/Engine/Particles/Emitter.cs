@@ -3,7 +3,9 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
+using Engine.Objects;
 
+namespace Engine.Particles;
 public class Emitter: BaseGameObject
 {
     private LinkedList<Particle> _activeParticles = new LinkedList<Particle>();

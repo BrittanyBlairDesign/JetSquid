@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Input;
 using System.Collections.Generic;
 
+namespace Engine.Input;
 public class GameplayInputMapper : BaseInputMapper
 {
     public override IEnumerable<BaseInputCommand> GetKeyboardState(KeyboardState state)

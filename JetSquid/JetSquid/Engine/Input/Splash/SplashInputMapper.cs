@@ -3,6 +3,8 @@ using Microsoft.Xna.Framework.Input;
 using System.Collections.Generic;
 using System.Diagnostics;
 
+namespace Engine.Input;
+
 public class SplashInputMapper : BaseInputMapper
 {
     public override IEnumerable<BaseInputCommand> GetKeyboardState(KeyboardState state)

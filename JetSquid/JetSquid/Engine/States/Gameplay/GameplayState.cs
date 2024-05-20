@@ -1,19 +1,23 @@
 ﻿// Ignore Spelling: Gameplay
-using System;
-using System.Collections.Generic;
-using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Graphics;
+
 using Microsoft.Xna.Framework;
+
+using Engine.Objects;
+using Engine.Input;
+using SpriteSheetAnimationContentPipeline;
+
+
+namespace Engine.States;
 public class GameplayState : BaseGameState
 {
     protected string Player = "Sprites/Player";
     protected string BackgroundTexture = "Backgrounds/Barren";
 
-    protected PlayerSprite _playerSprite;
+    protected SpriteObject _playerSprite;
  
     public override void LoadContent()
     {
-        _playerSprite = new PlayerSprite(LoadTexture(Player));
+        _playerSprite = new SpriteObject(LoadTexture(Player));
         
         AddGameObject(new SplashImage(LoadTexture(BackgroundTexture)));
         AddGameObject(_playerSprite);
@@ -21,6 +25,12 @@ public class GameplayState : BaseGameState
         var playerXPos = _viewportWidth / 2 - _playerSprite.Width / 2;
         var playerYPos = _viewportHeight - _playerSprite.Height - 30;
         _playerSprite.Position = new Vector2(playerXPos, playerYPos);
+    }
+
+    public virtual SpriteSheetAnimation LoadAnimation(string SpriteSheetName)
+    {
+        var SpriteSheet = _contentManager.Load<SpriteSheetAnimation>(SpriteSheetName);
+        return SpriteSheet;
     }
 
     public override void HandleInput(GameTime gameTime)
@@ -44,8 +54,9 @@ public class GameplayState : BaseGameState
        
     }
 
-    protected void KeepPlayerInBounds()
+    protected virtual void KeepPlayerInBounds()
     {
+
         if (_playerSprite.Position.X < 0)
         {
             _playerSprite.Position = new Vector2(0, _playerSprite.Position.Y);

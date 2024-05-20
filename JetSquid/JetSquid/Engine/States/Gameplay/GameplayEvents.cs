@@ -1,5 +1,5 @@
 ﻿
-
+namespace Engine.States;
 public class GameplayEvents : BaseGameStateEvent
 {
     public class PlayerJumps : GameplayEvents { }

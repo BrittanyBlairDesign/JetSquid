@@ -1,4 +1,5 @@
 ﻿
+namespace Engine.Input;
 public class DevInputCommand : BaseInputCommand
 {
     public class DevQuit : DevInputCommand { }

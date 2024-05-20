@@ -1,6 +1,10 @@
 ﻿
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Engine.Components.Physics;
+using Engine.Particles;
+
+namespace Engine.Objects;
 
 public class Projectile : BaseGameObject
 {

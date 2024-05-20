@@ -1,7 +1,5 @@
 ﻿
-using Microsoft.Xna.Framework;
 using System;
-
 
 public class RandomNumberGenerator
 {

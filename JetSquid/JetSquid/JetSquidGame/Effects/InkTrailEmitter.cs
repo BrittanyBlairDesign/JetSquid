@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace JetSquid.JetSquidGame.Effects
+﻿
+using Engine.Particles;
+using System.Numerics;
+namespace JetSquid;
+public class InkTrailEmitter : ConeEmitterType
 {
-    internal class InkTrailEmitter
-    {
-    }
+  public InkTrailEmitter(Vector2 direction, float spread) : base(direction, spread)
+    { }
 }
+

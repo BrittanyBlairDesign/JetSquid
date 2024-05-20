@@ -6,7 +6,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
 
-
+using Engine.States;
+using Engine.System;
+using System;
 
 enum Scenes
 {
@@ -21,16 +23,20 @@ public class MainGame : Game
     protected GraphicsDeviceManager _graphics;
     protected SpriteBatch _spriteBatch;
 
-
+//  Game Settings 
     protected bool isDebug = false;
     protected bool isPaused = false;
+
 //  Render Target
     private RenderTarget2D _renderTarget;
     private Rectangle _renderScaleRectangle;
+    private bool isResizing = false;
 
-//  Window Size
-    private int DESIGNED_RESOLUTION_WIDTH = 888;
-    private int DESIGNED_RESOLUTION_HEIGHT = 1016;
+
+
+//  Desired resolution for the game.
+    private int DESIGNED_RESOLUTION_WIDTH;
+    private int DESIGNED_RESOLUTION_HEIGHT;
     private float DESIGNED_RESOLUTION_ASPECT_RATIO;
 
     public MainGame(int width, int height, BaseGameState firstGameState)
@@ -42,6 +48,35 @@ public class MainGame : Game
         DESIGNED_RESOLUTION_WIDTH = width;
         DESIGNED_RESOLUTION_HEIGHT = height;
         DESIGNED_RESOLUTION_ASPECT_RATIO = width / (float)height;
+
+        Window.AllowUserResizing = true;
+        Window.ClientSizeChanged += OnClientSizeChanged;
+    }
+
+    public MainGame(int width, int height, BaseGameState firstGameState, bool Debug)
+    {
+        Content.RootDirectory = "Content";
+        _graphics = new GraphicsDeviceManager(this);
+
+        _firstGameState = firstGameState;
+        DESIGNED_RESOLUTION_WIDTH = width;
+        DESIGNED_RESOLUTION_HEIGHT = height;
+        DESIGNED_RESOLUTION_ASPECT_RATIO = width / (float)height;
+
+        Window.AllowUserResizing = true;
+        Window.ClientSizeChanged += OnClientSizeChanged;
+
+        isDebug = Debug;
+    }
+
+    private void OnClientSizeChanged(object sender, EventArgs e)
+    {
+        if (!isResizing && Window.ClientBounds.Width > 0 && Window.ClientBounds.Height > 0)
+        {
+            isResizing = true;
+            _renderScaleRectangle = GetScaleRectangle();
+            isResizing = false;
+        }
     }
 
     protected override void Initialize()
@@ -55,8 +90,8 @@ public class MainGame : Game
                         SurfaceFormat.Color, DepthFormat.None, 0, RenderTargetUsage.DiscardContents);
 
         _renderScaleRectangle = GetScaleRectangle();
-        this.IsMouseVisible = true;
 
+        this.IsMouseVisible = true;
         base.Initialize();
     }
 
@@ -72,16 +107,23 @@ public class MainGame : Game
             var presentHeight = (int)(Window.ClientBounds.Width / DESIGNED_RESOLUTION_ASPECT_RATIO + variance);
             var barHeight = (Window.ClientBounds.Height - presentHeight) / 2;
 
-            scaleRectangle = new Rectangle(0, barHeight, Window.ClientBounds.Width, presentHeight);
+            _graphics.PreferredBackBufferHeight = presentHeight ;
+            _graphics.PreferredBackBufferWidth = Window.ClientBounds.Width;
+
+            scaleRectangle = new Rectangle(0, 0, Window.ClientBounds.Width, presentHeight);
         }
         else
         {
             var presentWidth = (int)(Window.ClientBounds.Height * DESIGNED_RESOLUTION_ASPECT_RATIO + variance);
             var barWidth = (Window.ClientBounds.Width - presentWidth) / 2;
 
-            scaleRectangle = new Rectangle(barWidth, 0, presentWidth, Window.ClientBounds.Height);
+            _graphics.PreferredBackBufferWidth = presentWidth;
+            _graphics.PreferredBackBufferHeight = Window.ClientBounds.Height;
+
+            scaleRectangle = new Rectangle(0, 0, presentWidth, Window.ClientBounds.Height);
         }
 
+        _graphics.ApplyChanges();
         return scaleRectangle;
     }
 
@@ -110,9 +152,14 @@ public class MainGame : Game
         _currentGameState = gameState;
 
         _currentGameState.Initialize(Content, DESIGNED_RESOLUTION_WIDTH, DESIGNED_RESOLUTION_HEIGHT);
+        GetScaleRectangle();
+
 
         if (isDebug)
         {
+            Trace.WriteLine(" DESIGNED_RESOLUTION_WIDTH : " + DESIGNED_RESOLUTION_WIDTH);
+            Trace.WriteLine(" DESIGNED_RESOLUTION_HEIGHT : " + DESIGNED_RESOLUTION_HEIGHT);
+
             _currentGameState.LoadContent(_graphics.GraphicsDevice);
         }
         else
@@ -164,12 +211,13 @@ public class MainGame : Game
 
     protected override void Draw(GameTime gameTime)
     {
-         // Render to the Render Target
+        // Render to the Render Target
         GraphicsDevice.SetRenderTarget(_renderTarget);
 
         GraphicsDevice.Clear(Color.CornflowerBlue);
+        
 
-        _spriteBatch.Begin();
+        _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
 
         _currentGameState.Render(_spriteBatch);
 
@@ -180,7 +228,7 @@ public class MainGame : Game
 
         _graphics.GraphicsDevice.Clear(ClearOptions.Target, Color.Black, 1.0f, 0);
 
-        _spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Opaque);
+        _spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Opaque, samplerState: SamplerState.PointClamp) ;
 
         _spriteBatch.Draw(_renderTarget, _renderScaleRectangle, Color.White);
 
@@ -197,4 +245,5 @@ public class MainGame : Game
     protected virtual void Save(SaveFile save) { }
 
     protected virtual SaveFile Load() { return null; }
+
 }

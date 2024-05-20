@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework;
 using System;
 
+namespace Engine.Particles;
 public class ConeEmitterType : IEmitterType
 {
     public Vector2 Direction { get; private set; }
