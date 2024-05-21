@@ -1,5 +1,6 @@
 ﻿
 using Engine.Input;
+using Engine.Particles;
 using Engine.States;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -13,17 +14,25 @@ namespace JetSquid
     public class JetSquidGameplayState : GameplayState
     {
         private string playerTexture = "JetSquid/Animation/Player/SquidAnimatedSpriteSheet";
-
         private PlayerSquid _player;
+
+        private string inkParticleTexture = "JetSquid/Particles/InkParticle";
+        private InkJetEmitter _inkEmitter;
 
         public override void LoadContent(GraphicsDevice graphics = null)
         {
+
+
             SpriteSheetAnimation animSheet = LoadAnimation(playerTexture);
             int spriteHeight = animSheet.Animations[0].SpriteHeight;
             Vector2 playerStartPos;
             playerStartPos.X = _viewportWidth / 3;
             playerStartPos.Y = _viewportHeight - ((spriteHeight * 0.5f) / 2);
-            _player = new PlayerSquid(animSheet, playerStartPos, true, 0.5f);
+
+            _inkEmitter = new InkJetEmitter(LoadTexture(inkParticleTexture), playerStartPos);
+            AddGameObject(_inkEmitter);
+
+            _player = new PlayerSquid(animSheet, playerStartPos, true, 0.5f, _inkEmitter);
             _playerSprite = _player;
             AddGameObject(_player);
 
@@ -41,7 +50,7 @@ namespace JetSquid
             base.Update(gameTime);
         }
 
-        public override void HandleInput(GameTime gameTime)
+        public override void HandleInput(GameTime gameTime, Point MousePosition)
         {
             _inputManager.GetCommands(cmd =>
             {

@@ -35,5 +35,12 @@ namespace Engine.Components.Collision
             { return true; }
             else return false;
         }
+
+        public bool ContainsPoint(Vector2 apoint)
+        {
+            Point point = new Point((int)apoint.X, (int)apoint.Y);
+
+            return Rectangle.Contains(point);
+        }
     }
 }

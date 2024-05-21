@@ -18,17 +18,12 @@ public class ConeEmitterType : IEmitterType
 
     public Vector2 GetParticleDirection()
     {
-        if(Direction == Vector2.Zero)
-        {
-            return new Vector2(0, 0);
-        }
 
         var angle = (float)Math.Atan2(Direction.Y, Direction.X);
         var newAngle = _rand.NextRandom(angle - Spread / 2.0f, angle + Spread / 2.0f);
 
         var particleDirection = new Vector2((float)Math.Cos(newAngle), (float)Math.Sin(newAngle));
         particleDirection.Normalize();
-
         return particleDirection;
     }
 

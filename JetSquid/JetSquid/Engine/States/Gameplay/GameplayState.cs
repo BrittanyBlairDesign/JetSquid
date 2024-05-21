@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework;
 using Engine.Objects;
 using Engine.Input;
 using SpriteSheetAnimationContentPipeline;
+using Microsoft.Xna.Framework.Graphics;
 
 
 namespace Engine.States;
@@ -15,7 +16,7 @@ public class GameplayState : BaseGameState
 
     protected SpriteObject _playerSprite;
  
-    public override void LoadContent()
+    public override void LoadContent(GraphicsDevice graphics = null)
     {
         _playerSprite = new SpriteObject(LoadTexture(Player));
         
@@ -25,6 +26,12 @@ public class GameplayState : BaseGameState
         var playerXPos = _viewportWidth / 2 - _playerSprite.Width / 2;
         var playerYPos = _viewportHeight - _playerSprite.Height - 30;
         _playerSprite.Position = new Vector2(playerXPos, playerYPos);
+
+        if (graphics != null)
+        {
+            isDebug = true;
+            this.graphics = graphics;
+        }
     }
 
     public virtual SpriteSheetAnimation LoadAnimation(string SpriteSheetName)
@@ -33,7 +40,7 @@ public class GameplayState : BaseGameState
         return SpriteSheet;
     }
 
-    public override void HandleInput(GameTime gameTime)
+    public override void HandleInput(GameTime gameTime, Point MousePosition)
     {
         _inputManager.GetCommands(cmd =>
         {

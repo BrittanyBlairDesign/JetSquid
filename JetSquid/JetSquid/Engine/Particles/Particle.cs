@@ -4,77 +4,35 @@ using Engine.Components.Physics;
 using Microsoft.Xna.Framework;
 using System.Collections.Generic;
 
-
 namespace Engine.Particles;
 public class Particle
 {
-    protected List<ParticleComponent> components = new List<ParticleComponent>();
-    public Vector2 Position;
-    public Vector2 GetPosition()
-    {
-        if (components != null)
-        {
-            foreach (ParticleComponent c in components)
-            {
-                if (c.GetType() == typeof(ParticleScaling))
-                {
-                    ParticleScaling s = c as ParticleScaling;
-                    return s._scale;
-                }
-            }
-        }
+    public Vector2 Position { get; private set; }
+    public float Scale { get; private set; }
+    public float Opacity { get; private set; }
 
-        return Position;
-    }
-    
-    
-    public Vector2 Scale;
-    public Vector2 GetScale()
-    {
-
-        if (components != null)
-        {
-            foreach (ParticleComponent c in components)
-            {
-                if (c.GetType() == typeof(ParticleScaling))
-                {
-                    ParticleScaling s = c as ParticleScaling;
-                    return s._scale;
-                }
-            }
-        }
-        return Scale;
-    }
-
-    public float Opacity;
-    public float GetOpacity()
-    {
-        if (components != null)
-        {
-            foreach (ParticleComponent c in components)
-            {
-                if (c.GetType() == typeof(ParticleOpacity))
-                {
-                    ParticleOpacity o = c as ParticleOpacity;
-                    return o._opacity;
-                }
-            }
-        }
-        return Opacity;
-    }
-
-
-    private int _lifespan;
-    private float _age;
-    private float _ageRate;
-
+    private int _lifespan; // will tick up every update and monogame updates 60 times per second
+    private int _age;
+    private Vector2 _direction;
+    private Vector2 _gravity;
+    private float _velocity;
+    private float _acceleration;
+    private float _rotation;
+    private float _opacityFadingRate;
 
     public Particle() { }
 
-    public virtual void Activate(int lifespan, float ageRate, Vector2 position, Vector2 scale, float opacity, List<ParticleComponent> particleComponents = null)
+    public void Activate(int lifespan, Vector2 position, Vector2 direction, Vector2 gravity,
+                         float velocity, float acceleration,
+                         float scale, float rotation, float opacity, float opacityFadingRate)
     {
         _lifespan = lifespan;
-        _ageRate = ageRate;
+        _direction = direction;
+        _velocity = velocity;
+        _gravity = gravity;
+        _acceleration = acceleration;
+        _rotation = rotation;
+        _opacityFadingRate = opacityFadingRate;
         _age = 0;
 
         Position = position;
@@ -82,19 +40,23 @@ public class Particle
         Scale = scale;
     }
 
-    public virtual bool Update(GameTime gameTime)
+    // returns false if it went past its lifespan
+    public bool Update(GameTime gameTime)
     {
-        if (components != null)
-        {
-            foreach (ParticleComponent c in components)
-            {
-                c.Update(gameTime);
-            }
-        }
-        _age -= _ageRate;
+        var speed = _acceleration * (_gravity + _direction);
+        var positionDelta = speed * _velocity;
+        //_direction.Normalize();
+
+        
+
+        Position += positionDelta;
+
+        Opacity *= _opacityFadingRate;
+
+        // return true if particle can stay alive
+        _age++;
         return _age < _lifespan;
     }
-
 }
 
 

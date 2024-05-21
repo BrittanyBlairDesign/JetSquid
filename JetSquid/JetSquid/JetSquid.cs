@@ -1,8 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Engine.States;
-using System.Runtime.Serialization;
-using System.Diagnostics;
-using System.Collections;
+
 
 namespace JetSquid
 {

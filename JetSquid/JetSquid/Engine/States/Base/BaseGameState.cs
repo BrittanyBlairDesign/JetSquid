@@ -11,6 +11,9 @@ using Engine.Input;
 using Engine.Sound;
 using Microsoft.Xna.Framework.Input;
 using Engine.Components.Collision;
+using MonoGame.Extended;
+using Engine.Viewports;
+using System.Reflection.Metadata;
 
 
 
@@ -24,6 +27,7 @@ public abstract class BaseGameState
     protected ContentManager _contentManager;
     protected int _viewportHeight;
     protected int _viewportWidth;
+    protected ScalingViewport _Viewport;
 
     protected GraphicsDevice graphics;
     protected bool isDebug = false;
@@ -31,20 +35,19 @@ public abstract class BaseGameState
     protected SoundManager _soundManager = new SoundManager();
 
     // Loading and unloading content
-    public abstract void LoadContent();
-    public virtual void LoadContent(GraphicsDevice graphics)
-    { isDebug = true; this.graphics = graphics; }
+    public abstract void LoadContent(GraphicsDevice graphics = null);
+
     public void UnloadContent()
     {
         _contentManager.Unload();
     }
 
-    public virtual void Initialize(ContentManager contentManager, int viewportWidth, int viewportHeight)
+    public virtual void Initialize(ContentManager contentManager, int viewportWidth, int viewportHeight, ScalingViewport viewport)
     {
         _contentManager = contentManager;
         _viewportHeight = viewportHeight;
         _viewportWidth = viewportWidth;
-
+        _Viewport = viewport;
         SetInputManager();
     }
 
@@ -62,7 +65,7 @@ public abstract class BaseGameState
     // Input
     protected abstract void SetInputManager();
     public abstract void UpdateGameState(GameTime gameTime);
-    public abstract void HandleInput(GameTime gameTime);
+    public abstract void HandleInput(GameTime gameTime, Point MousePosition);
     public virtual void Update(GameTime gameTime) 
     {
         _soundManager.PlaySoundTrack();

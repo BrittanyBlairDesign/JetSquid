@@ -4,16 +4,23 @@ using Microsoft.Xna.Framework.Input;
 
 using Engine.Objects;
 using Engine.Input;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace Engine.States;
 public class SplashState : BaseGameState
 {
-    public override void LoadContent()
+    public override void LoadContent(GraphicsDevice graphics = null)
     {
-        AddGameObject(new SplashImage(LoadTexture("SplashScreens/Splash")));
+        AddGameObject(new SplashImage(LoadTexture("Empty")));
+        
+        if (graphics != null)
+        {
+            isDebug = true;
+            this.graphics = graphics;
+        }
     }
 
-    public override void HandleInput(GameTime gameTime)
+    public override void HandleInput(GameTime gameTime, Point MousePosition)
     {
         _inputManager.GetCommands(cmd =>
         {

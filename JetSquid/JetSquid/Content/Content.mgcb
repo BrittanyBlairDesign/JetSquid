@@ -15,6 +15,18 @@
 
 #---------------------------------- Content ---------------------------------#
 
+#begin Empty.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Empty.png
+
 #begin JetSquid/Animation/Player/SquidAnimatedSpriteSheet.png
 /importer:SpriteSheetAnimationImporter
 /processor:SpritesheetAnimationProcessor
@@ -29,6 +41,18 @@
 /processorParam:_spriteHeight=169
 /processorParam:identifier=JetSquid.Anim2DTypeReader, JetSquid
 /build:JetSquid/Animation/Player/SquidAnimatedSpriteSheet.png
+
+#begin JetSquid/Particles/InkParticle.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:JetSquid/Particles/InkParticle.png
 
 #begin JetSquid/UI/ExitButtton.png
 /importer:TextureImporter

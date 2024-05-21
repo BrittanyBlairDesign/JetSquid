@@ -27,9 +27,9 @@ public class Emitter: BaseGameObject
         Position = position;
     }
 
-    public void Update(GameTime gameTime)
+    public void Update(GameTime gameTime, bool emit)
     {
-        EmitParticles();
+        if (emit) { EmitParticles(); }
 
         var particleNode = _activeParticles.First;
         while(particleNode != null)

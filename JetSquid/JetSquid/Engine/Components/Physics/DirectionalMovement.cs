@@ -17,6 +17,12 @@ namespace Engine.Components.Physics
             _startSpeed = speed;
             ChangeDirection(direction);
         }
+        public Movement(float speed, Vector2 direction)
+        {
+            _speed = speed;
+            _startSpeed = speed;
+            _direction = direction;
+        }
 
         public Movement()
         {

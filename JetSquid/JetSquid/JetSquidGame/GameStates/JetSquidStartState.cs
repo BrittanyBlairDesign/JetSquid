@@ -49,7 +49,7 @@ public class JetSquidStartState : SplashState
         _inputManager = new InputManager(new JetSquidMenuInputMapper());
     }
 
-    public override void HandleInput(GameTime gameTime)
+    public override void HandleInput(GameTime gameTime, Point MousePosition)
     {
         _inputManager.GetCommands(cmd =>
         {
@@ -70,17 +70,15 @@ public class JetSquidStartState : SplashState
 
             if (cmd is JetSquidMenuInputCommand.MouseClick)
             {
-                if(StartButton.isHovering())
+                if(StartButton.isHovering(MousePosition))
                 {
                     SwitchState(new JetSquidGameplayState());
                 }
-                else if( ExitButton.isHovering())
+                else if( ExitButton.isHovering(MousePosition))
                 {
                     NotifyEvent(new BaseGameStateEvent.GameQuit());
                 }
             }
-
-
         });
     }
 

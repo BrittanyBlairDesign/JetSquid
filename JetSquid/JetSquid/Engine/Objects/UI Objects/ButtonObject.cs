@@ -37,15 +37,13 @@ public class ButtonObject : BaseGameObject
         _Debug = true;
     }
 
-    public virtual bool isHovering()
+    public virtual bool isHovering(Point MousePosition)
     {
-        MouseState state = Mouse.GetState();
+
         foreach (BoundingBox2D box in BoundingBoxes)
         {
-            
-
             Rectangle rect = box.Rectangle;
-            if (rect.Contains(state.Position))
+            if (rect.Contains(MousePosition))
             {
                 _color = Color.Red;
                 Trace.WriteLine(" Mouse is hovering over Button.");
@@ -53,7 +51,7 @@ public class ButtonObject : BaseGameObject
             }
             else
             {
-                Trace.WriteLine("Mouse Position = " + state.Position);
+                Trace.WriteLine("Mouse Position = " + MousePosition);
                 _color = Color.White;
             }
         }

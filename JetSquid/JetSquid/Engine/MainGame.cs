@@ -3,19 +3,14 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 using System.Diagnostics;
-using System.IO;
-using System.Text.Json;
+
 
 using Engine.States;
 using Engine.System;
-using System;
+using Engine.Viewports;
 
-enum Scenes
-{
-    START,
-    GAME,
-    LOSE    
-}
+
+
 public class MainGame : Game
 {
     protected BaseGameState _currentGameState;
@@ -29,17 +24,16 @@ public class MainGame : Game
 
 //  Render Target
     private RenderTarget2D _renderTarget;
-    private Rectangle _renderScaleRectangle;
-    private bool isResizing = false;
-
-
 
 //  Desired resolution for the game.
     private int DESIGNED_RESOLUTION_WIDTH;
     private int DESIGNED_RESOLUTION_HEIGHT;
     private float DESIGNED_RESOLUTION_ASPECT_RATIO;
 
-    public MainGame(int width, int height, BaseGameState firstGameState)
+//  Viewport that Scales With The Window
+    private ScalingViewport _Viewport;
+
+    public MainGame(int width, int height, BaseGameState firstGameState, bool Debug = false)
     {
         Content.RootDirectory = "Content";
         _graphics = new GraphicsDeviceManager(this);
@@ -50,33 +44,7 @@ public class MainGame : Game
         DESIGNED_RESOLUTION_ASPECT_RATIO = width / (float)height;
 
         Window.AllowUserResizing = true;
-        Window.ClientSizeChanged += OnClientSizeChanged;
-    }
 
-    public MainGame(int width, int height, BaseGameState firstGameState, bool Debug)
-    {
-        Content.RootDirectory = "Content";
-        _graphics = new GraphicsDeviceManager(this);
-
-        _firstGameState = firstGameState;
-        DESIGNED_RESOLUTION_WIDTH = width;
-        DESIGNED_RESOLUTION_HEIGHT = height;
-        DESIGNED_RESOLUTION_ASPECT_RATIO = width / (float)height;
-
-        Window.AllowUserResizing = true;
-        Window.ClientSizeChanged += OnClientSizeChanged;
-
-        isDebug = Debug;
-    }
-
-    private void OnClientSizeChanged(object sender, EventArgs e)
-    {
-        if (!isResizing && Window.ClientBounds.Width > 0 && Window.ClientBounds.Height > 0)
-        {
-            isResizing = true;
-            _renderScaleRectangle = GetScaleRectangle();
-            isResizing = false;
-        }
     }
 
     protected override void Initialize()
@@ -89,43 +57,12 @@ public class MainGame : Game
         _renderTarget = new RenderTarget2D(_graphics.GraphicsDevice, DESIGNED_RESOLUTION_WIDTH, DESIGNED_RESOLUTION_HEIGHT, false,
                         SurfaceFormat.Color, DepthFormat.None, 0, RenderTargetUsage.DiscardContents);
 
-        _renderScaleRectangle = GetScaleRectangle();
-
+        _Viewport = new ScalingViewport(Window, _graphics, DESIGNED_RESOLUTION_WIDTH, DESIGNED_RESOLUTION_HEIGHT, DESIGNED_RESOLUTION_ASPECT_RATIO);
+        _Viewport.RefreshViewport();
         this.IsMouseVisible = true;
         base.Initialize();
     }
 
-    private Rectangle GetScaleRectangle()
-    {
-        var variance = 0.5;
-        var actualAspectRatio = Window.ClientBounds.Width / (float)Window.ClientBounds.Height;
-
-        Rectangle scaleRectangle;
-
-        if (actualAspectRatio <= DESIGNED_RESOLUTION_ASPECT_RATIO)
-        {
-            var presentHeight = (int)(Window.ClientBounds.Width / DESIGNED_RESOLUTION_ASPECT_RATIO + variance);
-            var barHeight = (Window.ClientBounds.Height - presentHeight) / 2;
-
-            _graphics.PreferredBackBufferHeight = presentHeight ;
-            _graphics.PreferredBackBufferWidth = Window.ClientBounds.Width;
-
-            scaleRectangle = new Rectangle(0, 0, Window.ClientBounds.Width, presentHeight);
-        }
-        else
-        {
-            var presentWidth = (int)(Window.ClientBounds.Height * DESIGNED_RESOLUTION_ASPECT_RATIO + variance);
-            var barWidth = (Window.ClientBounds.Width - presentWidth) / 2;
-
-            _graphics.PreferredBackBufferWidth = presentWidth;
-            _graphics.PreferredBackBufferHeight = Window.ClientBounds.Height;
-
-            scaleRectangle = new Rectangle(0, 0, presentWidth, Window.ClientBounds.Height);
-        }
-
-        _graphics.ApplyChanges();
-        return scaleRectangle;
-    }
 
     protected override void LoadContent()
     {
@@ -150,9 +87,9 @@ public class MainGame : Game
 
         
         _currentGameState = gameState;
-
-        _currentGameState.Initialize(Content, DESIGNED_RESOLUTION_WIDTH, DESIGNED_RESOLUTION_HEIGHT);
-        GetScaleRectangle();
+        _Viewport.RefreshViewport();
+        _currentGameState.Initialize(Content, DESIGNED_RESOLUTION_WIDTH, DESIGNED_RESOLUTION_HEIGHT, _Viewport);
+ 
 
 
         if (isDebug)
@@ -199,7 +136,7 @@ public class MainGame : Game
 
     protected override void Update(GameTime gameTime)
     {
-        _currentGameState.HandleInput(gameTime);
+        _currentGameState.HandleInput(gameTime, _Viewport.GetScaledMousePosition());
 
         if(!isPaused)
         {
@@ -215,7 +152,6 @@ public class MainGame : Game
         GraphicsDevice.SetRenderTarget(_renderTarget);
 
         GraphicsDevice.Clear(Color.CornflowerBlue);
-        
 
         _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
 
@@ -226,12 +162,14 @@ public class MainGame : Game
         // Now render the scaled content
         _graphics.GraphicsDevice.SetRenderTarget(null);
 
+        _Viewport.RefreshViewport();
+
         _graphics.GraphicsDevice.Clear(ClearOptions.Target, Color.Black, 1.0f, 0);
 
-        _spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Opaque, samplerState: SamplerState.PointClamp) ;
+        _spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Opaque, samplerState: SamplerState.PointClamp, transformMatrix:_Viewport.GetScaleMatrix()) ;
 
-        _spriteBatch.Draw(_renderTarget, _renderScaleRectangle, Color.White);
-
+        _spriteBatch.Draw(_renderTarget, Vector2.Zero, Color.White);
+        
         _spriteBatch.End();
 
         base.Draw(gameTime);

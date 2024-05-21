@@ -3,17 +3,18 @@ using System;
 
 public class RandomNumberGenerator
 {
-    private Random _rand;
+    private Random _rnd;
 
     public RandomNumberGenerator()
     {
-        _rand = new Random();
+        _rnd = new Random();
     }
 
-    public int NextRandom() => _rand.Next();
-    public int NextRandom(int Max) => _rand.Next(Max);
-    public int NextRandom(int Min, int Max) => _rand.Next(Min, Max);
-    public float NextRandom(float Max) => (float)_rand.NextDouble() * Max;
-    public float NextRandom(float Min, float Max) => (float)_rand.NextDouble() * (Max - Min) + Min;
+    public int NextRandom() => _rnd.Next();
+    public int NextRandom(int max) => _rnd.Next(max);
+    public int NextRandom(int min, int max) => _rnd.Next(min, max);
+
+    public float NextRandom(float max) => (float)_rnd.NextDouble() * max;
+    public float NextRandom(float min, float max) => ((float)_rnd.NextDouble() * (max - min)) + min;
 
 }
