@@ -37,7 +37,7 @@
 /processorParam:_frameRate=12
 /processorParam:_AnimationNames=FanOn
 /processorParam:frameCount=2
-/processorParam:_spriteWidth=0
+/processorParam:_spriteWidth=340
 /processorParam:_spriteHeight=700
 /processorParam:identifier=JetSquid.Anim2DTypeReader, JetSquid
 /build:JetSquid/Animation/Objects/FanSpriteAnim.png

@@ -9,6 +9,7 @@ using Engine.Stats;
 using System.Diagnostics;
 using Engine.Particles;
 using System.Runtime.CompilerServices;
+using Engine.Components.Collision;
 
 
 namespace JetSquid
@@ -50,7 +51,7 @@ namespace JetSquid
         {
             SetManager(frameRate);
             SetAnimations(sheetAnimation);
-
+            
             _jetEmitter = emitter;
 
         }
@@ -60,7 +61,7 @@ namespace JetSquid
         {
             SetManager(frameRate);
             SetAnimations(sheetAnimation);
-
+            AddBoundingBox(new BoundingBox2D(startPos, SpriteWidth, SpriteHeight));
             _jetEmitter = emitter;
         }
 
@@ -92,25 +93,30 @@ namespace JetSquid
                 _color = Color.White;
             }
 
-            Vector2 newPos = Position + _movement.Update(gameTime);
-            if(_animManager.CheckCurrentAnimation("JumpNoInk"))
+            UpdatePosition(_movement.Update(gameTime));
+        }
+
+        protected override void UpdatePosition(Vector2 positionDelta)
+        {
+            Vector2 newDelta = positionDelta;
+            if (_animManager.CheckCurrentAnimation("JumpNoInk"))
             {
                 float spriteHeight = _animManager._spriteSize.Y * Scale;
-                if(newPos.Y < 1080 - spriteHeight + (spriteHeight /2)) 
+                if (Position.Y + positionDelta.Y < 1080 - spriteHeight * 2)
                 {
-                    if(_Debug)
+                    if (_Debug)
                     {
-                        Trace.WriteLine("Sprite Y Position = " + newPos.Y.ToString());
+                        Trace.WriteLine("Sprite Y Position = " + Position.Y.ToString());
                     }
-                    newPos.Y = 1080 - spriteHeight + (spriteHeight / 2);
-                    
+                    float yPos = 1080 - spriteHeight + (spriteHeight / 2);
+                    newDelta.Y = positionDelta.Y - yPos;
                     _movement.ChangeDirection(Direction.DOWN);
                     _animationState = ePlayerAnimState.FALLING;
                 }
             }
 
-            Position = newPos;
-            _jetEmitter.Position = new Vector2(Position.X + (SpriteWidth - SpriteWidth /3), Position.Y + SpriteHeight/3);
+            Position += newDelta;
+            _jetEmitter.Position = new Vector2(Position.X + (SpriteWidth - SpriteWidth / 3), Position.Y + SpriteHeight / 3);
         }
 
         public override void SetAnimations(SpriteSheetAnimation spriteSheet)

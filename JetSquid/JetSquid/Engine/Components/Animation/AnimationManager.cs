@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using SpriteSheetAnimationContentPipeline;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace Engine.Components.Animation
 {
@@ -39,8 +40,8 @@ namespace Engine.Components.Animation
                 _animations.Add(spriteSheet.Animations[i].Name, anim);
 
             }
-
-            _spriteSize = _animations["Walk"]._spriteSize;
+            
+            _spriteSize = _animations.First().Value._spriteSize;
 
         }
 
@@ -126,10 +127,12 @@ namespace Engine.Components.Animation
         {
             return _currentAnimation == _animations[animationName];
         }
-        public virtual void Draw(SpriteBatch spriteBatch, Vector2 position,Color color, SpriteEffects effects = SpriteEffects.None)
+        public virtual void Draw(SpriteBatch spriteBatch, Vector2 position,Color color, SpriteEffects effects = SpriteEffects.None, float scale = 0.0f)
         {
-            if(_currentAnimation != null)
-            _currentAnimation.Draw(spriteBatch, position, effects, color );
+            if (_currentAnimation != null)
+            {
+                _currentAnimation.Draw(spriteBatch, position,color, effects, scale); 
+            }
         }
     }
 } 

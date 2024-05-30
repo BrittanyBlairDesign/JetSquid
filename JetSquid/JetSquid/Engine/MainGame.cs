@@ -44,7 +44,7 @@ public class MainGame : Game
         DESIGNED_RESOLUTION_ASPECT_RATIO = width / (float)height;
 
         Window.AllowUserResizing = true;
-
+        isDebug = Debug;
     }
 
     protected override void Initialize()

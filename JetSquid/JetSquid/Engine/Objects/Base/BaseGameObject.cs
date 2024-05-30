@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Engine.Components.Collision;
 using Engine.States;
 using System.Diagnostics;
+using Engine.Components.Physics;
 
 
 namespace Engine.Objects
@@ -65,7 +66,15 @@ namespace Engine.Objects
         {
             this._position = newPos;
         }
-
+        
+        protected virtual void UpdatePosition(Vector2 positionDelta)
+        {
+            Position += positionDelta;
+            //foreach (BoundingBox2D box in BoundingBoxes)
+            //{
+            //    box.Position += positionDelta;
+            //}
+        }
         public void AddBoundingBox(BoundingBox2D box)
         {
             _boundingBoxes.Add(box);
@@ -79,12 +88,10 @@ namespace Engine.Objects
                 {
                     box.BoundingBoxTexture = CreateBoundingBoxTexture(spriteBatch.GraphicsDevice, box.Rectangle);
                 }
-
+                
                 Rectangle scaleRect = box.Rectangle;
                 scaleRect.Height = (int)(scaleRect.Height * _scale);
                 scaleRect.Width = (int)(scaleRect.Width * _scale);
-                scaleRect.X = (int)(scaleRect.X * _scale);
-                scaleRect.Y = (int)(scaleRect.Y * _scale);
                 
                 spriteBatch.Draw(box.BoundingBoxTexture, scaleRect, box.Rectangle, Color.Red);
             }
@@ -127,6 +134,27 @@ namespace Engine.Objects
             }
         }
 
+        public virtual float GetScale()
+        {
+            return _scale;
+        }
+        public virtual bool CollidesWith(BoundingBox2D otherBox)
+        {
+            if(otherBox == null) return false;
+
+            bool isColliding = false;
+
+            foreach(BoundingBox2D box in BoundingBoxes)
+            {
+                if(box.CollidesWith(otherBox))
+                {
+                    isColliding = true;
+                    break;
+                }
+            }
+
+            return isColliding;
+        }
     }
 }
 

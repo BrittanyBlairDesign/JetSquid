@@ -130,14 +130,14 @@ namespace Engine.Components.Animation
             return _playState;
         }
 
-        public virtual void Draw(SpriteBatch spriteBatch, Vector2 location, SpriteEffects effects, Color color)
+        public virtual void Draw(SpriteBatch spriteBatch, Vector2 location, Color color, SpriteEffects effects = SpriteEffects.None, float scale = 1.0f)
         {
-            spriteBatch.Draw(_spriteSheet, location, _frame, color, 0.0f, Vector2.Zero, 0.5f, effects, 1.0f); ;
+            spriteBatch.Draw(_spriteSheet, location, _frame, color, 0.0f, Vector2.Zero, scale, effects, 1.0f); 
         }
 
         public virtual void Draw(SpriteBatch spriteBatch, Vector2 location, SpriteEffects effects)
         {
-            spriteBatch.Draw(_spriteSheet, location, _frame, Color.White, 0.0f, Vector2.Zero, 0.5f, effects, 1.0f); ;
+            spriteBatch.Draw(_spriteSheet, location, _frame, Color.White, 0.0f, Vector2.Zero, 0.5f, effects, 1.0f);
         }
 
     }

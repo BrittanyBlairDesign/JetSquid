@@ -24,7 +24,7 @@ public class AnimatedSpriteObject : SpriteObject
             base(animationSheet.TextureSheet, debug, scale) { }
 
     public AnimatedSpriteObject(SpriteSheetAnimation animationSheet,Vector2 startPos, bool debug = false, float scale = 1.0f) :
-          base(animationSheet.TextureSheet, startPos, debug, scale)
+            base(animationSheet.TextureSheet, startPos, debug, scale)
     { }
     public virtual void SetManager(int frameRate)
     {
@@ -46,7 +46,8 @@ public class AnimatedSpriteObject : SpriteObject
 
     public override void Render(SpriteBatch spriteBatch)
     {
-        _animManager.Draw(spriteBatch, Position,_color, SpriteEffects.None);
+        _animManager.Draw(spriteBatch, Position, _color, SpriteEffects.None, _scale);
+
         if(_Debug)
         {
             RenderBoundingBoxes(spriteBatch);

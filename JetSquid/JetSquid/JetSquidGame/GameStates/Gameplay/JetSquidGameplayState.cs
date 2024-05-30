@@ -10,6 +10,7 @@ using MonoGame.Extended.Serialization;
 using SpriteSheetAnimationContentPipeline;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace JetSquid
 {
@@ -27,14 +28,28 @@ namespace JetSquid
         // Obstacles
         private string fishBucket = "JetSquid/Objects/FishBucketObstacle";
         private Texture2D fishBucketTex;
+        private float fishBucketScale = 1.0f;
+        private float fishBucketPoints = 10;
+
         private string crate = "JetSquid/Objects/Crate";
         private Texture2D crateTex;
+        private float crateScale = .5f;
+        private float cratePoints = 50;
+
         private string ceilingLight = "JetSquid/Objects/HangingLight";
         private Texture2D ceilingLightTex;
+        private float ceilingLightScale = .75f;
+        private float ceilingLightPoints = 75;
+
         private string airDucts = "JetSquid/Objects/AirDucts";
         private Texture2D airDuctsTex;
+        private float airDuctScale = 1.0f;
+        private float airDuctPoints = 200;
+
         private string ceilingFan = "JetSquid/Animation/Objects/FanSpriteAnim";
         private SpriteSheetAnimation ceilingFanTex;
+        private float ceilingFanScale = 1.0f;
+        private float ceilingFanPoints = 125;
 
         private List<Obstacle> floorObstacleList = new List<Obstacle>();
         private List<Obstacle> ceilingObstacleList = new List<Obstacle>();
@@ -44,16 +59,37 @@ namespace JetSquid
         private BoundingBox2D _FloorSpawner;
 
         private float SpawnTimer;
-        private float SpawnCoolDown;
+        private float SpawnCoolDown = 5.0f;
         private int obstacleCount { get { return floorObstacleList.Count + ceilingObstacleList.Count + fanObstacleList.Count; } }
-        private int maxObstacles = 6;
+        private int maxObstacles = 20;
 
+
+        // Collectables
+        int floorHeight = 50;
+
+        private string inkCollectable = "JetSquid/Particle/InkParticle";
+        private Texture2D inkTex;
+        float inkScale = 1.0f;
+        private float inkPoints = 1;
+
+        private float collectableTimer;
+        private float collectableDurration = 1.5f;
+        private List<Obstacle> collectables = new List<Obstacle>();
+
+        private BoundingBox2D _collectableSpawner;
+
+        // Score
+        public int HighScore;
+        public int Score;
+   
         // Level Speed
         private float levelSpeed = 3.0f;
         private Direction levelDirection = Direction.RIGHT;
+
         // Player
         private string playerTexture = "JetSquid/Animation/Player/SquidAnimatedSpriteSheet";
         private PlayerSquid _player;
+        private float playerScale = .5f;
 
         private string inkParticleTexture = "JetSquid/Particles/InkParticle";
         private InkJetEmitter _inkEmitter;
@@ -72,19 +108,19 @@ namespace JetSquid
             int spriteHeight = animSheet.Animations[0].SpriteHeight;
             Vector2 playerStartPos;
             playerStartPos.X = _viewportWidth / 3;
-            playerStartPos.Y = _viewportHeight - ((spriteHeight * 0.5f) / 2);
+            playerStartPos.Y = _viewportHeight - ((spriteHeight * playerScale) / 2);
 
             _inkEmitter = new InkJetEmitter(LoadTexture(inkParticleTexture), playerStartPos);
             AddGameObject(_inkEmitter);
 
-            _player = new PlayerSquid(animSheet, playerStartPos, true, 0.5f, _inkEmitter);
+            _player = new PlayerSquid(animSheet, playerStartPos, isDebug, playerScale, _inkEmitter);
             _playerSprite = _player;
             AddGameObject(_player);
 
 
             // Obstacle Spawners
-            _CeilingSpawner = new BoundingBox2D(new Vector2(_viewportWidth + 500, 500 / 2), 500, 700);
-            _FloorSpawner = new BoundingBox2D(new Vector2(_viewportWidth + 500, _viewportHeight - 500 / 2), 250, 250);
+            _CeilingSpawner = new BoundingBox2D(new Vector2(_viewportWidth + 500, 0), 500, 700);
+            _FloorSpawner = new BoundingBox2D(new Vector2(_viewportWidth + 500, _viewportHeight), 250, 250);
 
             // Obstacle Textures
             fishBucketTex = LoadTexture(fishBucket);
@@ -135,73 +171,139 @@ namespace JetSquid
             floorObstacleList = CleanObjects(floorObstacleList);
             ceilingObstacleList = CleanObjects(ceilingObstacleList);
             fanObstacleList = CleanObjects(fanObstacleList);
+
             
             if(SpawnTimer > 0.0f)
             {
-                SpawnTimer -= (float)gameTime.TotalGameTime.TotalSeconds;
+                SpawnTimer -= (float)gameTime.ElapsedGameTime.TotalSeconds;
             }
             else
             {
                 if (obstacleCount < maxObstacles)
-                { AttemptSpawn(); }
+                { floorHeight = AttemptSpawn(); }
             }
             
+            if(collectableTimer > 0.0f)
+            {
+                collectableTimer -= (float)gameTime.ElapsedGameTime.TotalSeconds;
+            }
+            else
+            {
+                SpawnCollectable(floorHeight);
+            }
+
             base.UpdateGameState(gameTime);
         }
 
-        private void AttemptSpawn()
+        private void SpawnCollectable(int floorHeight)
+        {
+            _collectableSpawner.Position = FindSpawnPosition(_collectableSpawner);
+
+            Vector2 position = _collectableSpawner.Position;
+            Obstacle collectable = new Obstacle(inkTex, position, isDebug, levelSpeed, levelDirection, null, inkScale);
+             
+        }
+
+        private Vector2 FindSpawnPosition(BoundingBox2D spawner)
+        {
+            bool searchingForSpawnPoint = true;
+            BoundingBox2D box = spawner;
+            box.Position = new Vector2(spawner.Position.X, _viewportHeight - 50);
+
+            Vector2 newSpawnLocation = Vector2.Zero;
+
+            while (searchingForSpawnPoint)
+            {
+                newSpawnLocation = DetectSpawnCollisions(box);
+
+                if(newSpawnLocation == box.Position)
+                {
+                    searchingForSpawnPoint = false;
+                }
+                else
+                {
+                    box.Position = newSpawnLocation;
+                }
+            }
+
+            return newSpawnLocation;
+        }
+
+        private int AttemptSpawn()
         {
             bool spawnComplete = false;
-            int FloorHeight = 0;
+            int FloorHeight = 50;
 
             RandomNumberGenerator rand = new RandomNumberGenerator();
-
-            int floorSpawns = rand.NextRandom(3);
-            for (int i = 0; i < floorSpawns; i++)
+            int floor_Or_Ceiling = rand.NextRandom(1, 3);
+            
+            if(floor_Or_Ceiling == 1 && DetectSpawnCollisions(_FloorSpawner) == _FloorSpawner.Position)
             {
-                switch (rand.NextRandom(2))
+                int floorSpawns = rand.NextRandom(3);
+                float scale;
+                for (int i = 0; i < floorSpawns; i++)
+                {
+                    switch (rand.NextRandom(2))
+                    {
+                        case 0:
+                            scale = rand.NextRandom(.5f, fishBucketScale);
+                            FloorHeight += (int)(fishBucketTex.Height * scale);
+                            spawnComplete = SpawnFloorObstacle(fishBucketTex, FloorHeight);
+                            FloorHeight -= (int)((fishBucketTex.Height * scale) /3);
+                            break;
+                        case 1:
+                            scale = rand.NextRandom(.5f, crateScale);
+                            FloorHeight += (int)(crateTex.Height * scale);
+                            spawnComplete = SpawnFloorObstacle(crateTex, FloorHeight);
+                            FloorHeight -= (int)(crateTex.Height * scale)/4;
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+            else if(floor_Or_Ceiling == 2 && DetectSpawnCollisions(_CeilingSpawner) == _CeilingSpawner.Position)
+            {
+                Vector2 collider;
+                float scale;
+                int ceilingOffest = rand.NextRandom(300);
+                switch (rand.NextRandom(3))
                 {
                     case 0:
-                        spawnComplete = SpawnFloorObstacle(fishBucketTex, FloorHeight);
-                        FloorHeight += fishBucketTex.Height;
+                        collider = new Vector2(ceilingLightTex.Width, 200);
+                        scale = rand.NextRandom(.5f, ceilingLightScale);
+                        spawnComplete = SpawnCeilingObstacle(ceilingLightTex, collider, ceilingOffest, scale);
                         break;
                     case 1:
-                        spawnComplete = SpawnFloorObstacle(crateTex, FloorHeight);
-                        FloorHeight += crateTex.Height;
+                        collider = new Vector2(airDuctsTex.Width, airDuctsTex.Height);
+                        scale = rand.NextRandom(.5f, airDuctScale);
+                        spawnComplete = SpawnCeilingObstacle(airDuctsTex, collider, ceilingOffest);
+                        break;
+                    case 2:
+                        collider = new Vector2(ceilingFanTex.Width / 2, 150);
+                        scale = rand.NextRandom(.5f, ceilingFanScale);
+                        Vector2 position = _CeilingSpawner.Position;
+                        position.Y -= ceilingOffest;
+
+                        Vector2 colliderPos = position;
+                        colliderPos.Y = (ceilingFanTex.Height * ceilingFanScale) - (collider.Y * ceilingFanScale);
+
+                        BoundingBox2D box = new BoundingBox2D(colliderPos, collider.X, collider.Y);
+
+                        AnimatedObstacle FanObstacle = new AnimatedObstacle(ceilingFanTex, position, isDebug,ceilingFanScale, levelSpeed, levelDirection, box);
+                        AddGameObject(FanObstacle);
+                        fanObstacleList.Add(FanObstacle);
                         break;
                     default:
                         break;
                 }
             }
 
-            Rectangle box2D;
-            int ceilingOffest = rand.NextRandom(75);
-            switch(rand.NextRandom(3))
-            {
-                case 0:
-                    box2D = new Rectangle((int)_CeilingSpawner.Position.X,(int)_CeilingSpawner.Position.Y + (ceilingLightTex.Height - 100) , ceilingLightTex.Width, 100);
-                    spawnComplete = SpawnCeilingObstacle(ceilingLightTex, box2D, ceilingOffest);
-                    break;
-                case 1:
-                    box2D = new Rectangle((int)_CeilingSpawner.Position.X, (int)_CeilingSpawner.Position.Y, airDuctsTex.Width, airDuctsTex.Height);
-                    spawnComplete = SpawnCeilingObstacle(airDuctsTex,box2D, ceilingOffest);
-                    break;
-                case 3:
-                    box2D = new Rectangle((int)_CeilingSpawner.Position.X, (int)_CeilingSpawner.Position.Y +( (ceilingFanTex.Height - 100) - ceilingOffest), ceilingFanTex.Width/2, 100);
-                    Vector2 position = _CeilingSpawner.Position;
-                    position.Y -= ceilingOffest;
-                    AnimatedObstacle FanObstacle = new AnimatedObstacle(ceilingFanTex, position, isDebug, 1, levelSpeed, levelDirection, new BoundingBox2D(position, ceilingFanTex.Width/2, 100));
-                    AddGameObject(FanObstacle);
-                    fanObstacleList.Add(FanObstacle);
-                    break;
-                default:
-                    break;
-            }
-
             if (spawnComplete)
             {
-                SpawnTimer = SpawnCoolDown;
+                SpawnTimer = rand.NextRandom(1.0f, SpawnCoolDown);
             }
+            return FloorHeight;
         }
 
         private bool SpawnFloorObstacle(Texture2D tex, int offsetHeight = 0)
@@ -215,14 +317,22 @@ namespace JetSquid
             return true;
         }
 
-        private bool SpawnCeilingObstacle(Texture2D tex,Rectangle box2D, int offsetHeight = 0)
+        private bool SpawnCeilingObstacle(Texture2D tex,Vector2 ColliderSize, int offsetHeight = 0, float scale = 1.0f)
         {
-            box2D.Y -= offsetHeight;
+            
             Vector2 position = _CeilingSpawner.Position;
             position.Y -= offsetHeight;
 
-            BoundingBox2D box = new BoundingBox2D(position, box2D.Width, box2D.Height);
-            Obstacle ceilingObstacel = new Obstacle(tex, position, isDebug, levelSpeed, levelDirection, box);
+            Vector2 colliderPos = position;
+
+            if(ColliderSize.Y != tex.Height)
+            {
+                colliderPos.Y = (tex.Height * scale) - (ColliderSize.Y * scale);
+            }
+        
+
+            BoundingBox2D box = new BoundingBox2D(colliderPos, ColliderSize.X, ColliderSize.Y);
+            Obstacle ceilingObstacel = new Obstacle(tex, position, isDebug, levelSpeed, levelDirection, box, scale);
             AddGameObject(ceilingObstacel);
             floorObstacleList.Add(ceilingObstacel);
             return true;
@@ -328,6 +438,16 @@ namespace JetSquid
                 }
             });
 
+            var collectableCollisiondetector = new AABBCollisionDetector<Obstacle, PlayerSquid>(collectables);
+
+            collectableCollisiondetector.DetectCollisions(_player, (Obstacle, PlayerSquid) =>
+            {
+                hitEvent = new JetSquidGameplayEvents.PlayerEarnPoints();
+                collectables.Remove(Obstacle);
+                _player.OnNotify(hitEvent);
+                NotifyEvent(hitEvent);
+            });
+
             var ceilingObstacelCollisionDetector = new AABBCollisionDetector<Obstacle, PlayerSquid>(ceilingObstacleList);
 
             ceilingObstacelCollisionDetector.DetectCollisions(_player, (Obstacle, PlayerSquid) =>
@@ -371,12 +491,69 @@ namespace JetSquid
             {
                 if (_inkEmitter.CheckForParticleCollisions(floorObstacle.BoundingBoxes[0]))
                 {
-                    floorObstacle.OnNotify(hitEvent);
-                    
+                    floorObstacle.OnNotify(hitEvent);    
                 }
             }
         }
 
+        protected Vector2 DetectSpawnCollisions(BoundingBox2D spawner)
+        {
+            Vector2 nextPosition = spawner.Position;
+
+            foreach(Obstacle FO in floorObstacleList)
+            {
+                if (FO.CollidesWith(spawner))
+                {
+                    nextPosition.Y = FO.Position.Y - (FO.Height * FO.GetScale());
+                }
+            }
+
+            foreach(Obstacle CO in ceilingObstacleList)
+            {
+                if(CO.CollidesWith(spawner))
+                {
+                    
+                    float Y = CO.Position.Y - (CO.Height * CO.GetScale());
+                    if(Y <= 0.0f)
+                    {
+                        Y = CO.Position.Y + (CO.Height * CO.GetScale());
+                    }
+
+                    nextPosition.Y = Y;
+                }
+            }
+
+            foreach (AnimatedObstacle Fan in fanObstacleList)
+            {
+                if (Fan.CollidesWith(spawner))
+                {
+
+                    float Y = Fan.Position.Y - (Fan.SpriteHeight);
+                    if (Y <= 0.0f)
+                    {
+                        Y = Fan.Position.Y + (Fan.SpriteHeight);
+                    }
+
+                    nextPosition.Y = Y;
+                }
+            }
+
+            foreach (BaseGameObject GO in collectables)
+            {
+                if(GO.CollidesWith(spawner))
+                {
+                    float Y = GO.Position.Y - (GO.Height * GO.GetScale());
+                    if (Y <= 0.0f)
+                    {
+                        Y = GO.Position.Y + (GO.Height * GO.GetScale());
+                    }
+
+                    nextPosition.Y = Y;
+                }
+            }
+
+            return nextPosition;
+        }
     }
 
 }
