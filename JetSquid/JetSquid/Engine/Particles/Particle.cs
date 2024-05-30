@@ -57,6 +57,11 @@ public class Particle
         _age++;
         return _age < _lifespan;
     }
+
+    public virtual void KillParticle()
+    {
+        _age = _lifespan;
+    }
 }
 
 

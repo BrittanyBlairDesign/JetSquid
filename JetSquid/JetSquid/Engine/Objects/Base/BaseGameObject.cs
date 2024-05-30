@@ -16,8 +16,11 @@ namespace Engine.Objects
         protected Texture2D _boundingBoxTexture;
         protected Vector2 _position = Vector2.One;
         protected float _scale = 1.0f;
+        protected Color _color = Color.White;
 
         public int zIndex;
+
+        public bool Destroyed = false;
 
         public int Width { get { return _texture.Width; } }
         public int Height { get { return _texture.Height; } }
@@ -46,12 +49,16 @@ namespace Engine.Objects
         public virtual void OnNotify(BaseGameStateEvent gameEvent) { }                         
         public virtual void Render(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(_texture, _position, Color.White);
+            spriteBatch.Draw(_texture, _position, _color);
 
             if (_Debug)
             {
                 RenderBoundingBoxes(spriteBatch);
             }
+        }
+        public void Destroy()
+        {
+            Destroyed = true;
         }
 
         public void setPosition(Vector2 newPos)
@@ -79,7 +86,7 @@ namespace Engine.Objects
                 scaleRect.X = (int)(scaleRect.X * _scale);
                 scaleRect.Y = (int)(scaleRect.Y * _scale);
                 
-                spriteBatch.Draw(box.BoundingBoxTexture, scaleRect, box.Rectangle, Color.White);
+                spriteBatch.Draw(box.BoundingBoxTexture, scaleRect, box.Rectangle, Color.Red);
             }
         }
 

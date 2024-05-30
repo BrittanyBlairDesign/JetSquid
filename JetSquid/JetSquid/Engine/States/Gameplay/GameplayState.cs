@@ -6,6 +6,7 @@ using Engine.Objects;
 using Engine.Input;
 using SpriteSheetAnimationContentPipeline;
 using Microsoft.Xna.Framework.Graphics;
+using System.Collections.Generic;
 
 
 namespace Engine.States;
@@ -59,6 +60,26 @@ public class GameplayState : BaseGameState
     protected virtual void DetectCollisions()
     {
        
+    }
+
+    protected List<T> CleanObjects<T>(List<T> objectList) where T : BaseGameObject
+    {
+        List<T> listOfItemsToKeep = new List<T>();
+        foreach (T item in objectList)
+        {
+            var offScreen = item.Position.Y < -50;
+
+            if (offScreen || item.Destroyed)
+            {
+                RemoveGameObject(item);
+            }
+            else
+            {
+                listOfItemsToKeep.Add(item);
+            }
+        }
+
+        return listOfItemsToKeep;
     }
 
     protected virtual void KeepPlayerInBounds()

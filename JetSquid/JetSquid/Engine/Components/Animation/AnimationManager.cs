@@ -126,10 +126,10 @@ namespace Engine.Components.Animation
         {
             return _currentAnimation == _animations[animationName];
         }
-        public virtual void Draw(SpriteBatch spriteBatch, Vector2 position, SpriteEffects effects = SpriteEffects.None)
+        public virtual void Draw(SpriteBatch spriteBatch, Vector2 position,Color color, SpriteEffects effects = SpriteEffects.None)
         {
             if(_currentAnimation != null)
-            _currentAnimation.Draw(spriteBatch, position, effects);
+            _currentAnimation.Draw(spriteBatch, position, effects, color );
         }
     }
-}
+} 

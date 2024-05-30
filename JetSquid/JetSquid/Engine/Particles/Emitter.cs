@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 using Engine.Objects;
+using Engine.Components.Collision;
 
 namespace Engine.Particles;
 public class Emitter: BaseGameObject
@@ -32,30 +33,42 @@ public class Emitter: BaseGameObject
         if (emit) { EmitParticles(); }
 
         var particleNode = _activeParticles.First;
+
         while(particleNode != null)
         {
             var nextNode = particleNode.Next;
-            var stillAlive = particleNode.Value.Update(gameTime);
 
+            var stillAlive = particleNode.Value.Update(gameTime);
+            
             if(!stillAlive)
             {
                 _activeParticles.Remove(particleNode);
                 _inactiveParticles.AddLast(particleNode.Value);
+
             }
 
             particleNode = nextNode;
+  
         }
     }
 
     public override void Render(SpriteBatch spriteBatch)
     {
         var sourceRectangle = new Rectangle(0, 0, _texture.Width, _texture.Height);
+        
+        var particleNode = _activeParticles.First;
 
-        foreach(var particle in _activeParticles)
+        while(particleNode != null) 
         {
-            spriteBatch.Draw(_texture, particle.Position, sourceRectangle, 
-                             Color.White * particle.Opacity, 0.0f, new Vector2(0, 0), 
-                             particle.Scale, SpriteEffects.None, zIndex);
+            var nextParticle = particleNode.Next;
+
+
+            spriteBatch.Draw(_texture, particleNode.Value.Position, sourceRectangle, 
+                             Color.White * particleNode.Value.Opacity, 0.0f, new Vector2(0, 0), 
+                             particleNode.Value.Scale, SpriteEffects.None, zIndex);
+
+            particleNode = nextParticle;
+
         }
     }
 
@@ -76,6 +89,7 @@ public class Emitter: BaseGameObject
         particle.Activate(lifespan, position, direction, gravity, velocity, 
                           acceleration, scale, rotation, opacity, opacityFadingRate);
         _activeParticles.AddLast(particle);
+
     }
 
     private void EmitParticles()
@@ -92,8 +106,10 @@ public class Emitter: BaseGameObject
         for (var i = 0; i < nbToReuse; i++)
         {
             var particleNode = _inactiveParticles.First;
+
             EmitNewParticle(particleNode.Value);
             _inactiveParticles.Remove(particleNode);
+
         }
 
         for(var i = 0; i < nbToCreate; i++)
@@ -102,5 +118,18 @@ public class Emitter: BaseGameObject
         }
     }
 
-    
+    public bool CheckForParticleCollisions( BoundingBox2D box)
+    {
+        bool beenHit = false;
+        foreach ( var particle in _activeParticles )
+        {
+            if (box.ContainsPoint(particle.Position))
+            {
+                particle.KillParticle();
+                beenHit =  true;
+            }
+        }
+
+        return beenHit;
+    }
 }

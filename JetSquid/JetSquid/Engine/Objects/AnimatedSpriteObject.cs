@@ -3,10 +3,9 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework;
 
 using Engine.Components.Animation;
-using System.Diagnostics;
 using Engine.States;
 using SpriteSheetAnimationContentPipeline;
-using System.Reflection.Metadata.Ecma335;
+
 
 
 
@@ -14,6 +13,11 @@ namespace Engine.Objects;
 public class AnimatedSpriteObject : SpriteObject
 {
     protected AnimationManager2D _animManager = null;
+    public int SpriteWidth
+    { get { return (int)(_animManager._spriteSize.X * _scale); } }
+    public int SpriteHeight
+    { get { return (int)(_animManager._spriteSize.Y * _scale); } }
+
     public Texture2D _spriteSheet { get { return _texture; } set { _texture = value; } }
   
     public AnimatedSpriteObject(SpriteSheetAnimation animationSheet, bool debug = false, float scale = 1.0f):
@@ -29,7 +33,7 @@ public class AnimatedSpriteObject : SpriteObject
     }
 
 
-    public virtual void SetAnimations()
+    public virtual void SetAnimations(SpriteSheetAnimation spriteSheet)
     {
         // Specific to each animated sprite
     }
@@ -42,7 +46,7 @@ public class AnimatedSpriteObject : SpriteObject
 
     public override void Render(SpriteBatch spriteBatch)
     {
-        _animManager.Draw(spriteBatch, Position,SpriteEffects.None);
+        _animManager.Draw(spriteBatch, Position,_color, SpriteEffects.None);
         if(_Debug)
         {
             RenderBoundingBoxes(spriteBatch);

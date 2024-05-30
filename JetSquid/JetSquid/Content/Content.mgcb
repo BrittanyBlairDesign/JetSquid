@@ -27,6 +27,21 @@
 /processorParam:TextureFormat=Color
 /build:Empty.png
 
+#begin JetSquid/Animation/Objects/FanSpriteAnim.png
+/importer:SpriteSheetAnimationImporter
+/processor:SpritesheetAnimationProcessor
+/processorParam:_rows=1
+/processorParam:_columns=2
+/processorParam:_width=680
+/processorParam:_height=700
+/processorParam:_frameRate=12
+/processorParam:_AnimationNames=FanOn
+/processorParam:frameCount=2
+/processorParam:_spriteWidth=0
+/processorParam:_spriteHeight=700
+/processorParam:identifier=JetSquid.Anim2DTypeReader, JetSquid
+/build:JetSquid/Animation/Objects/FanSpriteAnim.png
+
 #begin JetSquid/Animation/Player/SquidAnimatedSpriteSheet.png
 /importer:SpriteSheetAnimationImporter
 /processor:SpritesheetAnimationProcessor
@@ -41,6 +56,78 @@
 /processorParam:_spriteHeight=169
 /processorParam:identifier=JetSquid.Anim2DTypeReader, JetSquid
 /build:JetSquid/Animation/Player/SquidAnimatedSpriteSheet.png
+
+#begin JetSquid/Objects/AirDucts.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:JetSquid/Objects/AirDucts.png
+
+#begin JetSquid/Objects/BrickWallBackground.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:JetSquid/Objects/BrickWallBackground.png
+
+#begin JetSquid/Objects/Crate.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:JetSquid/Objects/Crate.png
+
+#begin JetSquid/Objects/FishBucketObstacle.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:JetSquid/Objects/FishBucketObstacle.png
+
+#begin JetSquid/Objects/Floor.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:JetSquid/Objects/Floor.png
+
+#begin JetSquid/Objects/HangingLight.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:JetSquid/Objects/HangingLight.png
 
 #begin JetSquid/Particles/InkParticle.png
 /importer:TextureImporter

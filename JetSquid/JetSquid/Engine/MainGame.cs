@@ -153,7 +153,7 @@ public class MainGame : Game
 
         GraphicsDevice.Clear(Color.CornflowerBlue);
 
-        _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
+        _spriteBatch.Begin();
 
         _currentGameState.Render(_spriteBatch);
 
@@ -166,7 +166,7 @@ public class MainGame : Game
 
         _graphics.GraphicsDevice.Clear(ClearOptions.Target, Color.Black, 1.0f, 0);
 
-        _spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Opaque, samplerState: SamplerState.PointClamp, transformMatrix:_Viewport.GetScaleMatrix()) ;
+        _spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Opaque, transformMatrix:_Viewport.GetScaleMatrix()) ;
 
         _spriteBatch.Draw(_renderTarget, Vector2.Zero, Color.White);
         

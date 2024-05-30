@@ -1,20 +1,18 @@
 ﻿
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
+
 using Engine.Objects;
-using Engine.Components.Animation;
 using Engine.States;
 using SpriteSheetAnimationContentPipeline;
 using Engine.Components.Physics;
 using Engine.Stats;
-using System.Windows.Markup;
 using System.Diagnostics;
 using Engine.Particles;
+using System.Runtime.CompilerServices;
 
 
 namespace JetSquid
 {
-
     public enum ePlayerAnimState
     {
         WALKING,
@@ -33,13 +31,18 @@ namespace JetSquid
         // Animation vars
         public ePlayerAnimState _animationState = ePlayerAnimState.FALLING;
         public int frameRate = 12;
-        
+
         // Rendering and scale vars
         public float Scale { get { return _scale; } }
-        public int SpriteWidth
-        { get { return (int)(_animManager._spriteSize.X * _scale); } }
-        public int SpriteHeight
-        {get{ return (int)(_animManager._spriteSize.Y * _scale);} }
+
+        // Damage
+        public Color damageColor = Color.Lerp(Color.White, Color.Transparent, 0.5f);
+        public float damageColorTimer;
+        public float DamageColorDuration = 0.5f;
+
+        // ink Refill
+        private float inkCooldownTimer;
+        private float inkCooldownDuration = 0.5f;
 
         // Constructors 
         public PlayerSquid(SpriteSheetAnimation sheetAnimation, bool debug = false, float scale = 1.0f, Emitter emitter = null)
@@ -79,6 +82,15 @@ namespace JetSquid
                 _jetEmitter.Update(gameTime, false);
             }
             
+            if(damageColorTimer > 0.0f)
+            {
+                damageColorTimer -= deltaTime;
+                _color = damageColor;
+            }
+            else
+            {
+                _color = Color.White;
+            }
 
             Vector2 newPos = Position + _movement.Update(gameTime);
             if(_animManager.CheckCurrentAnimation("JumpNoInk"))
@@ -101,7 +113,7 @@ namespace JetSquid
             _jetEmitter.Position = new Vector2(Position.X + (SpriteWidth - SpriteWidth /3), Position.Y + SpriteHeight/3);
         }
 
-        public virtual void SetAnimations(SpriteSheetAnimation spriteSheet)
+        public override void SetAnimations(SpriteSheetAnimation spriteSheet)
         {
             _animManager.AddSpriteSheet(spriteSheet, _scale);
             _animManager.SwitchAnimations("Walk", true);
@@ -114,6 +126,7 @@ namespace JetSquid
             {
                 case ePlayerAnimState.WALKING:
                     Walk();
+                    Ink.Update(deltaTime);
                     break;
                 case ePlayerAnimState.JUMPING:
                     Jump();
@@ -127,6 +140,7 @@ namespace JetSquid
                     break;
             }
         }
+
         public virtual void Jump()
         {
 
@@ -154,7 +168,7 @@ namespace JetSquid
         {
             if(_animManager.CheckCurrentAnimation("Hover"))
             {
-
+                Ink.isDecaying = true;
                 if(Ink._value > 0)
                 {
                     // TODO: Emit particles from the squid for the jet propultion.
@@ -187,6 +201,10 @@ namespace JetSquid
                 } 
                 _animManager.SetNextAnimation("Walk", true);
                 _movement.ChangeDirection(Direction.STOP);
+            }
+            else
+            {
+                Ink.isDecaying = false;
             }
         }
 
@@ -237,6 +255,21 @@ namespace JetSquid
                 Trace.WriteLine(" Animation State : " + (string)_animationState.ToString());
                 Trace.WriteLine(" Event Notified to Player Squid");
             }
+        }
+       
+        public bool TakeDamage(int amount = 1)
+        {
+            if (damageColorTimer <= 0.0f)
+            {
+                Health.DecreaseValue(amount);
+                damageColorTimer = DamageColorDuration;
+
+                if (Health._value <= Health._minValue)
+                {
+                    return false;
+                }
+            } 
+            return true;
         }
     }
 }
