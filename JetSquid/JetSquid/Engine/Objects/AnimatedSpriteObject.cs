@@ -19,7 +19,10 @@ public class AnimatedSpriteObject : SpriteObject
     { get { return (int)(_animManager._spriteSize.Y * _scale); } }
 
     public Texture2D _spriteSheet { get { return _texture; } set { _texture = value; } }
-  
+
+    public int boxOffsetX = 0;
+    public int boxOffsetY = 0;
+
     public AnimatedSpriteObject(SpriteSheetAnimation animationSheet, bool debug = false, float scale = 1.0f):
             base(animationSheet.TextureSheet, debug, scale) { }
 
@@ -50,7 +53,7 @@ public class AnimatedSpriteObject : SpriteObject
 
         if(_Debug)
         {
-            RenderBoundingBoxes(spriteBatch);
+            RenderBoundingBoxes(spriteBatch, true, boxOffsetX, boxOffsetY);
         }
     }
 }

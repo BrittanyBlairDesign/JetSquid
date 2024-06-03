@@ -50,11 +50,14 @@ namespace Engine.Objects
         public virtual void OnNotify(BaseGameStateEvent gameEvent) { }                         
         public virtual void Render(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(_texture, _position, _color);
-
-            if (_Debug)
+            if(!Destroyed)
             {
-                RenderBoundingBoxes(spriteBatch);
+                spriteBatch.Draw(_texture, _position, _color);
+
+                if (_Debug)
+                {
+                    RenderBoundingBoxes(spriteBatch);
+                }
             }
         }
         public void Destroy()
@@ -65,6 +68,7 @@ namespace Engine.Objects
         public void setPosition(Vector2 newPos)
         {
             this._position = newPos;
+            
         }
         
         protected virtual void UpdatePosition(Vector2 positionDelta)
@@ -80,7 +84,7 @@ namespace Engine.Objects
             _boundingBoxes.Add(box);
         }
 
-        public virtual void RenderBoundingBoxes(SpriteBatch spriteBatch)
+        public virtual void RenderBoundingBoxes(SpriteBatch spriteBatch, bool AnimatedSprite = false, int xOffset = 0, int yOffset = 0)
         {
             foreach(var box in BoundingBoxes)
             {
@@ -88,12 +92,20 @@ namespace Engine.Objects
                 {
                     box.BoundingBoxTexture = CreateBoundingBoxTexture(spriteBatch.GraphicsDevice, box.Rectangle);
                 }
+
+                Rectangle boxRect = box.Rectangle; 
+                boxRect.X += xOffset;
+                boxRect.Y += yOffset;
+
+                Rectangle scaleRect =boxRect;
+                if (!AnimatedSprite)
+                {
+                    scaleRect.Height = (int)(scaleRect.Height * _scale);
+                    scaleRect.Width = (int)(scaleRect.Width * _scale);
+                }
                 
-                Rectangle scaleRect = box.Rectangle;
-                scaleRect.Height = (int)(scaleRect.Height * _scale);
-                scaleRect.Width = (int)(scaleRect.Width * _scale);
-                
-                spriteBatch.Draw(box.BoundingBoxTexture, scaleRect, box.Rectangle, Color.Red);
+
+                spriteBatch.Draw(box.BoundingBoxTexture, scaleRect,boxRect, Color.White);
             }
         }
 
@@ -101,8 +113,8 @@ namespace Engine.Objects
         {
             int rWidth = r.Width;
             int rHeight = r.Height;
-            Trace.Write(" WIDTH : " + rWidth);
-            Trace.Write(" Height : " + rHeight);
+            //Trace.Write(" WIDTH : " + rWidth);
+            //Trace.Write(" HEIGHT : " + rHeight);
 
             Texture2D Texture = new Texture2D(graphics, rWidth, rHeight);
             var colors = new List<Color>();
@@ -118,7 +130,7 @@ namespace Engine.Objects
                     }
                     else
                     {
-                        colors.Add(Color.Red);
+                        colors.Add(new Color(Color.Red, 0.5f));
                     }
                 }
             }

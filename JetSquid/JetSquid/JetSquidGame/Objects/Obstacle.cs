@@ -17,7 +17,7 @@ public class Obstacle : SpriteObject
     protected BaseStat _durability = new BaseStat(10, 10);
    
     protected float _damageTimer;
-    protected float _damageCooldown { get; set; }
+    protected float _damageCooldown = 0.2f;
 
     protected float colorFlashTimer;
     protected float colorFlashDuration;
@@ -28,10 +28,9 @@ public class Obstacle : SpriteObject
                   base(texture, startPos, debug)
     {  }
     public Obstacle(Texture2D texture, Vector2 startPos, bool debug = false, float speed = 0.0f, Direction dir = Direction.STOP, BoundingBox2D box2D = null, float scale = 1.0f )
-    : base(texture, startPos, debug)
+    : base(texture, startPos, debug, scale)
     {
         _movement = new Movement(speed, dir);
-        _scale = scale;
         if(box2D != null)
         {
             AddBoundingBox(box2D);
@@ -50,6 +49,9 @@ public class Obstacle : SpriteObject
                 if (!TakeDamage())
                 { Destroy(); }
                 break;
+            case JetSquidGameplayEvents.DestroyObstacle:
+                Destroy();
+                break;
         }
     }
 
@@ -60,6 +62,16 @@ public class Obstacle : SpriteObject
         if(_damageTimer > 0)
         {
             _damageTimer -= (float)gameTime.ElapsedGameTime.TotalSeconds;
+        }
+
+        if(colorFlashTimer > 0)
+        {
+            colorFlashTimer -= (float)gameTime.ElapsedGameTime.TotalSeconds;
+            _color = new Color(_color, 0.5f);
+        }
+        else
+        {
+            _color = Color.White;
         }
     }
 
@@ -82,12 +94,14 @@ public class Obstacle : SpriteObject
 
     public override void Render(SpriteBatch spriteBatch)
     {
-
-        spriteBatch.Draw(_texture, _position, null, _color, 0.0f, Vector2.Zero, _scale, SpriteEffects.None, 1);
-
-        if (_Debug)
+        if(!Destroyed)
         {
-            RenderBoundingBoxes(spriteBatch);
+            spriteBatch.Draw(_texture, _position, null, _color, 0.0f, Vector2.Zero, _scale, SpriteEffects.None, 1);
+
+            if (_Debug)
+            {
+                RenderBoundingBoxes(spriteBatch);
+            }
         }
     }
 }
@@ -166,8 +180,11 @@ public class AnimatedObstacle : AnimatedSpriteObject
         switch (gameEvent)
         {
             case JetSquidGameplayEvents.DamageObstacle:
-                if(!TakeDamage())
+                if (!TakeDamage())
                 { Destroy(); }
+                break;
+            case JetSquidGameplayEvents.DestroyObstacle:
+                Destroy();
                 break;
         }
     }

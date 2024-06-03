@@ -9,6 +9,7 @@ public class JetSquidGameplayEvents: GameplayEvents
     public class PlayerHover : JetSquidGameplayEvents { }
     public class PlayerFall : JetSquidGameplayEvents { }
     public class PlayerFloorCollide : JetSquidGameplayEvents { }
+    public class PlayerObstacleCollide: JetSquidGameplayEvents { }
 
     //      Damage events
     public class PlayerDie : JetSquidGameplayEvents { }
@@ -22,4 +23,5 @@ public class JetSquidGameplayEvents: GameplayEvents
 
     // All the object specific events
     public class DamageObstacle : JetSquidGameplayEvents { }
+    public class DestroyObstacle: JetSquidGameplayEvents { }
 }

@@ -3,12 +3,15 @@ using Engine.Components.Collision;
 using Engine.Components.Physics;
 using Engine.Input;
 using Engine.Objects;
+using Engine.Objects.UI;
 using Engine.States;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended.Serialization;
 using SpriteSheetAnimationContentPipeline;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Reflection.Metadata.Ecma335;
 using System.Runtime.InteropServices;
 using static System.Net.Mime.MediaTypeNames;
 
@@ -29,27 +32,27 @@ namespace JetSquid
         private string fishBucket = "JetSquid/Objects/FishBucketObstacle";
         private Texture2D fishBucketTex;
         private float fishBucketScale = 1.0f;
-        private float fishBucketPoints = 10;
+        private int fishBucketPoints = 10;
 
         private string crate = "JetSquid/Objects/Crate";
         private Texture2D crateTex;
         private float crateScale = .5f;
-        private float cratePoints = 50;
+        private int cratePoints = 50;
 
         private string ceilingLight = "JetSquid/Objects/HangingLight";
         private Texture2D ceilingLightTex;
         private float ceilingLightScale = .75f;
-        private float ceilingLightPoints = 75;
+        private int ceilingLightPoints = 75;
 
         private string airDucts = "JetSquid/Objects/AirDucts";
         private Texture2D airDuctsTex;
         private float airDuctScale = 1.0f;
-        private float airDuctPoints = 200;
+        private int airDuctPoints = 200;
 
         private string ceilingFan = "JetSquid/Animation/Objects/FanSpriteAnim";
         private SpriteSheetAnimation ceilingFanTex;
         private float ceilingFanScale = 1.0f;
-        private float ceilingFanPoints = 125;
+        private int ceilingFanPoints = 125;
 
         private List<Obstacle> floorObstacleList = new List<Obstacle>();
         private List<Obstacle> ceilingObstacleList = new List<Obstacle>();
@@ -70,17 +73,17 @@ namespace JetSquid
         private string inkCollectable = "JetSquid/Particle/InkParticle";
         private Texture2D inkTex;
         float inkScale = 1.0f;
-        private float inkPoints = 1;
+        private int inkPoints = 1;
 
         private float collectableTimer;
-        private float collectableDurration = 1.5f;
+        private float collectableDurration = 1.0f;
         private List<Obstacle> collectables = new List<Obstacle>();
 
         private BoundingBox2D _collectableSpawner;
 
         // Score
-        public int HighScore;
-        public int Score;
+        public double HighScore;
+        public double Score;
    
         // Level Speed
         private float levelSpeed = 3.0f;
@@ -94,8 +97,18 @@ namespace JetSquid
         private string inkParticleTexture = "JetSquid/Particles/InkParticle";
         private InkJetEmitter _inkEmitter;
 
+        public string scoreTexture = "JetSquid/UI/ScoreFrame";
+        private string scoreFont = "JetSquid/UI/Font"; 
+        public TextObject gameScore;
+
         public override void LoadContent(GraphicsDevice graphics = null)
         {
+            if (graphics != null)
+            {
+                isDebug = true;
+                this.graphics = graphics;
+            }
+
             // Background
             _wall = new Terrain(LoadTexture(backgroundWall), levelSpeed, levelDirection, _viewportWidth, _viewportHeight);
             AddGameObject(_wall);
@@ -110,18 +123,23 @@ namespace JetSquid
             playerStartPos.X = _viewportWidth / 3;
             playerStartPos.Y = _viewportHeight - ((spriteHeight * playerScale) / 2);
 
-            _inkEmitter = new InkJetEmitter(LoadTexture(inkParticleTexture), playerStartPos);
+            inkTex = LoadTexture(inkParticleTexture);
+            _inkEmitter = new InkJetEmitter(inkTex, playerStartPos);
             AddGameObject(_inkEmitter);
 
             _player = new PlayerSquid(animSheet, playerStartPos, isDebug, playerScale, _inkEmitter);
             _playerSprite = _player;
             AddGameObject(_player);
 
+            // score
+            gameScore = new TextObject(LoadTexture(scoreTexture), "Score " ,_contentManager.Load<SpriteFont>(scoreFont));
+            AddGameObject(gameScore);
 
             // Obstacle Spawners
             _CeilingSpawner = new BoundingBox2D(new Vector2(_viewportWidth + 500, 0), 500, 700);
             _FloorSpawner = new BoundingBox2D(new Vector2(_viewportWidth + 500, _viewportHeight), 250, 250);
-
+            _collectableSpawner = new BoundingBox2D(new Vector2(_viewportWidth + 500, _viewportHeight), 250, 250);
+           
             // Obstacle Textures
             fishBucketTex = LoadTexture(fishBucket);
             crateTex = LoadTexture(crate);
@@ -129,11 +147,6 @@ namespace JetSquid
             airDuctsTex = LoadTexture(airDucts);
             ceilingFanTex = LoadAnimation(ceilingFan);
 
-            if(graphics != null)
-            {
-                isDebug = true;
-                this.graphics = graphics;
-            }
         }
 
         public override void UpdateGameState(GameTime gameTime)
@@ -146,7 +159,7 @@ namespace JetSquid
                 FO.Update(gameTime);
                 if(FO.Position.X < 0 - FO.Width)
                 {
-                    FO.OnNotify(new JetSquidGameplayEvents.DamageObstacle());
+                    FO.OnNotify(new JetSquidGameplayEvents.DestroyObstacle());
                 }
             }
 
@@ -155,7 +168,7 @@ namespace JetSquid
                 CO.Update(gameTime);
                 if (CO.Position.X < 0 - CO.Width)
                 {
-                    CO.OnNotify(new JetSquidGameplayEvents.DamageObstacle());
+                    CO.OnNotify(new JetSquidGameplayEvents.DestroyObstacle());
                 }
             }
             
@@ -164,23 +177,36 @@ namespace JetSquid
                 Fan.Update(gameTime);
                 if (Fan.Position.X < 0 - Fan.SpriteWidth)
                 {
-                    Fan.OnNotify(new JetSquidGameplayEvents.DamageObstacle());
+                    Fan.OnNotify(new JetSquidGameplayEvents.DestroyObstacle());
+                }
+            }
+
+            foreach(Obstacle Item in collectables)
+            {
+                Item.Update(gameTime);
+                if(Item.Position.X < 0 - Item.Width)
+                {
+                    Item.OnNotify(new JetSquidGameplayEvents.DestroyObstacle());
                 }
             }
 
             floorObstacleList = CleanObjects(floorObstacleList);
             ceilingObstacleList = CleanObjects(ceilingObstacleList);
             fanObstacleList = CleanObjects(fanObstacleList);
-
+            collectables = CleanObjects(collectables);
             
             if(SpawnTimer > 0.0f)
             {
                 SpawnTimer -= (float)gameTime.ElapsedGameTime.TotalSeconds;
+                
             }
             else
             {
                 if (obstacleCount < maxObstacles)
-                { floorHeight = AttemptSpawn(); }
+                {
+                    floorHeight = 50;
+                    floorHeight = AttemptSpawn(); 
+                }
             }
             
             if(collectableTimer > 0.0f)
@@ -197,36 +223,14 @@ namespace JetSquid
 
         private void SpawnCollectable(int floorHeight)
         {
-            _collectableSpawner.Position = FindSpawnPosition(_collectableSpawner);
+            Vector2 position = new Vector2(_collectableSpawner.Position.X, _collectableSpawner.Position.Y - (floorHeight + (inkTex.Height * inkScale)));
 
-            Vector2 position = _collectableSpawner.Position;
             Obstacle collectable = new Obstacle(inkTex, position, isDebug, levelSpeed, levelDirection, null, inkScale);
+            collectables.Add(collectable);
+            AddGameObject(collectable);
+
+            collectableTimer = collectableDurration;
              
-        }
-
-        private Vector2 FindSpawnPosition(BoundingBox2D spawner)
-        {
-            bool searchingForSpawnPoint = true;
-            BoundingBox2D box = spawner;
-            box.Position = new Vector2(spawner.Position.X, _viewportHeight - 50);
-
-            Vector2 newSpawnLocation = Vector2.Zero;
-
-            while (searchingForSpawnPoint)
-            {
-                newSpawnLocation = DetectSpawnCollisions(box);
-
-                if(newSpawnLocation == box.Position)
-                {
-                    searchingForSpawnPoint = false;
-                }
-                else
-                {
-                    box.Position = newSpawnLocation;
-                }
-            }
-
-            return newSpawnLocation;
         }
 
         private int AttemptSpawn()
@@ -237,7 +241,7 @@ namespace JetSquid
             RandomNumberGenerator rand = new RandomNumberGenerator();
             int floor_Or_Ceiling = rand.NextRandom(1, 3);
             
-            if(floor_Or_Ceiling == 1 && DetectSpawnCollisions(_FloorSpawner) == _FloorSpawner.Position)
+            if(floor_Or_Ceiling == 1 )
             {
                 int floorSpawns = rand.NextRandom(3);
                 float scale;
@@ -246,15 +250,15 @@ namespace JetSquid
                     switch (rand.NextRandom(2))
                     {
                         case 0:
-                            scale = rand.NextRandom(.5f, fishBucketScale);
+                            scale = rand.NextRandom(.5f, 1.0f);
                             FloorHeight += (int)(fishBucketTex.Height * scale);
-                            spawnComplete = SpawnFloorObstacle(fishBucketTex, FloorHeight);
+                            spawnComplete = SpawnFloorObstacle(fishBucketTex, FloorHeight, scale);
                             FloorHeight -= (int)((fishBucketTex.Height * scale) /3);
                             break;
                         case 1:
-                            scale = rand.NextRandom(.5f, crateScale);
+                            scale = rand.NextRandom(.5f, 1.0f);
                             FloorHeight += (int)(crateTex.Height * scale);
-                            spawnComplete = SpawnFloorObstacle(crateTex, FloorHeight);
+                            spawnComplete = SpawnFloorObstacle(crateTex, FloorHeight, scale);
                             FloorHeight -= (int)(crateTex.Height * scale)/4;
                             break;
                         default:
@@ -262,7 +266,7 @@ namespace JetSquid
                     }
                 }
             }
-            else if(floor_Or_Ceiling == 2 && DetectSpawnCollisions(_CeilingSpawner) == _CeilingSpawner.Position)
+            else if(floor_Or_Ceiling == 2 )
             {
                 Vector2 collider;
                 float scale;
@@ -270,7 +274,7 @@ namespace JetSquid
                 switch (rand.NextRandom(3))
                 {
                     case 0:
-                        collider = new Vector2(ceilingLightTex.Width, 200);
+                        collider = new Vector2(ceilingLightTex.Width, 150);
                         scale = rand.NextRandom(.5f, ceilingLightScale);
                         spawnComplete = SpawnCeilingObstacle(ceilingLightTex, collider, ceilingOffest, scale);
                         break;
@@ -280,13 +284,13 @@ namespace JetSquid
                         spawnComplete = SpawnCeilingObstacle(airDuctsTex, collider, ceilingOffest);
                         break;
                     case 2:
-                        collider = new Vector2(ceilingFanTex.Width / 2, 150);
+                        collider = new Vector2(ceilingFanTex.Width / 2, 100);
                         scale = rand.NextRandom(.5f, ceilingFanScale);
                         Vector2 position = _CeilingSpawner.Position;
                         position.Y -= ceilingOffest;
 
                         Vector2 colliderPos = position;
-                        colliderPos.Y = (ceilingFanTex.Height * ceilingFanScale) - (collider.Y * ceilingFanScale);
+                        colliderPos.Y = (ceilingFanTex.Height * ceilingFanScale) - (collider.Y);
 
                         BoundingBox2D box = new BoundingBox2D(colliderPos, collider.X, collider.Y);
 
@@ -306,12 +310,14 @@ namespace JetSquid
             return FloorHeight;
         }
 
-        private bool SpawnFloorObstacle(Texture2D tex, int offsetHeight = 0)
+        private bool SpawnFloorObstacle(Texture2D tex, int offsetHeight = 0, float scale = 1.0f)
         {
             Vector2 position = _FloorSpawner.Position;
             position.Y -= offsetHeight;
 
-            Obstacle floorObstacle = new Obstacle(tex, position, isDebug, levelSpeed, levelDirection);
+            BoundingBox2D box = new BoundingBox2D(position, tex.Width , tex.Height);
+
+            Obstacle floorObstacle = new Obstacle(tex, position, isDebug, levelSpeed, levelDirection, box, scale: scale);
             AddGameObject(floorObstacle);
             floorObstacleList.Add(floorObstacle);
             return true;
@@ -415,37 +421,78 @@ namespace JetSquid
         protected override void DetectCollisions()
         {
             JetSquidGameplayEvents hitEvent;
-            var floorObstacleCollisionDetector = new AABBCollisionDetector<Obstacle, PlayerSquid>(floorObstacleList);
 
+            var floorObstacleCollisionDetector = new AABBCollisionDetector<Obstacle, PlayerSquid>(floorObstacleList);
             floorObstacleCollisionDetector.DetectCollisions(_player, (Obstacle, PlayerSquid) =>
             {
-                if (PlayerSquid.Position.Y > Obstacle.Position.Y)
-                {
-                    hitEvent = new JetSquidGameplayEvents.PlayerFloorCollide();
-                    PlayerSquid.OnNotify(hitEvent);
+                
+                Rectangle playerCollider = PlayerSquid.BoundingBoxes[0].Rectangle;
+                playerCollider.X += PlayerSquid.boxOffsetX;
+                playerCollider.Y += PlayerSquid.boxOffsetY;
+
+                Rectangle obstacleCollider = Obstacle.BoundingBoxes[0].Rectangle;
+                obstacleCollider.Width = (int)(obstacleCollider.Width * Obstacle.GetScale());
+                obstacleCollider.Height = (int)(obstacleCollider.Height * Obstacle.GetScale());
+                
+                PlayerSquid.SetCollidingObstacle(Obstacle);
+
+                if (isDebug)
+                {   
+                    Trace.WriteLine("Player Collision End Position   : " + (playerCollider.X + playerCollider.Width) + ", " + (playerCollider.Y + playerCollider.Height));
+                    Trace.WriteLine("Obstacle Collision Start Position : " + obstacleCollider.X + ", " + obstacleCollider.Y);
                 }
-                else if (PlayerSquid.Position.X > Obstacle.Position.X + Obstacle.Width / 2)
+
+                if (playerCollider.Y + (playerCollider.Height) <= obstacleCollider.Y) // If squid is taller than the object its colliding with.
                 {
-                    hitEvent = new JetSquidGameplayEvents.PlayerFall();
-                    if (PlayerSquid._animationState == ePlayerAnimState.WALKING)
-                    { PlayerSquid.OnNotify(hitEvent); }
+                    // if squid is on top of the object.
+                    if (playerCollider.X + playerCollider.Width >= obstacleCollider.X ||
+                        playerCollider.X < (obstacleCollider.X + obstacleCollider.Width))
+                    {
+                        // if squid is not already walking or is not hovering then we can let the squid walk on the box.
+                        if (PlayerSquid._animationState != ePlayerAnimState.HOVERING && PlayerSquid._animationState != ePlayerAnimState.WALKING)
+                        {
+                            hitEvent = new JetSquidGameplayEvents.PlayerObstacleCollide();
+                            PlayerSquid.OnNotify(hitEvent);
+
+                            if (isDebug)
+                            {
+                                Trace.WriteLine(" Player is walking on a Floor Obstacle. ");
+                            }
+                        }
+                    }
                 }
-                else
+                else if (playerCollider.X < (obstacleCollider.X + obstacleCollider.Width) ) // if squid hit the left side of the object.
                 {
-                    hitEvent = new JetSquidGameplayEvents.PlayerTakeDamage();
-                    PlayerSquid.OnNotify(hitEvent);
-                    PlayerSquid.setPosition(new Vector2(PlayerSquid.Position.X, Obstacle.Position.Y - (Obstacle.Height / 2)));
+                    if((playerCollider.Y + playerCollider.Height) > obstacleCollider.Y)
+                    {
+                        hitEvent = new JetSquidGameplayEvents.PlayerTakeDamage();
+                        PlayerSquid.OnNotify(hitEvent);
+
+                        PlayerSquid.Position = new Vector2(PlayerSquid.Position.X, Obstacle.Position.Y - (PlayerSquid.SpriteHeight));
+                        hitEvent = new JetSquidGameplayEvents.PlayerObstacleCollide();
+                        PlayerSquid.OnNotify(hitEvent);
+
+                        if (isDebug)
+                        {
+                            Trace.WriteLine(" Player Hit the side of an Obstacle.");
+                        }
+                    }
+
                 }
             });
-
+            
             var collectableCollisiondetector = new AABBCollisionDetector<Obstacle, PlayerSquid>(collectables);
 
             collectableCollisiondetector.DetectCollisions(_player, (Obstacle, PlayerSquid) =>
             {
                 hitEvent = new JetSquidGameplayEvents.PlayerEarnPoints();
-                collectables.Remove(Obstacle);
                 _player.OnNotify(hitEvent);
                 NotifyEvent(hitEvent);
+
+                hitEvent = new JetSquidGameplayEvents.DestroyObstacle();
+                Obstacle.OnNotify(hitEvent);
+
+                AddScorePoints(inkPoints);
             });
 
             var ceilingObstacelCollisionDetector = new AABBCollisionDetector<Obstacle, PlayerSquid>(ceilingObstacleList);
@@ -456,7 +503,7 @@ namespace JetSquid
                 {
                     hitEvent = new JetSquidGameplayEvents.PlayerTakeDamage();
                     PlayerSquid.OnNotify(hitEvent);
-                    PlayerSquid.setPosition(new Vector2(PlayerSquid.Position.X,Obstacle.Position.Y + (Obstacle.Height / 2)));
+                    PlayerSquid.Position = new Vector2(PlayerSquid.Position.X , Obstacle.Position.Y + (Obstacle.Height * Obstacle.GetScale()));
 
                 }
             });
@@ -467,7 +514,7 @@ namespace JetSquid
             {
                 hitEvent = new JetSquidGameplayEvents.PlayerTakeDamage();
                 PlayerSquid.OnNotify(hitEvent);
-                PlayerSquid.setPosition(new Vector2(PlayerSquid.Position.X, Obstacle.BoundingBoxes[0].Rectangle.Y + 100));
+                PlayerSquid.Position = new Vector2(PlayerSquid.Position.X, Obstacle.BoundingBoxes[0].Rectangle.Y + 100);
             });
 
             hitEvent = new JetSquidGameplayEvents.DamageObstacle();
@@ -476,6 +523,10 @@ namespace JetSquid
                 if(_inkEmitter.CheckForParticleCollisions(fanObstacle.BoundingBoxes[0]))
                 {
                     fanObstacle.OnNotify(hitEvent);
+                    if(fanObstacle.Destroyed)
+                    {
+                        AddScorePoints(ceilingFanPoints);
+                    }
                 }
             }
 
@@ -484,6 +535,8 @@ namespace JetSquid
                 if (_inkEmitter.CheckForParticleCollisions(ceilingObstacle.BoundingBoxes[0]))
                 {
                     ceilingObstacle.OnNotify(hitEvent);
+
+                    AddScorePoints(airDuctPoints);
                 }
             }
 
@@ -491,70 +544,19 @@ namespace JetSquid
             {
                 if (_inkEmitter.CheckForParticleCollisions(floorObstacle.BoundingBoxes[0]))
                 {
-                    floorObstacle.OnNotify(hitEvent);    
+                    floorObstacle.OnNotify(hitEvent);
+                    AddScorePoints(cratePoints);
                 }
             }
         }
 
-        protected Vector2 DetectSpawnCollisions(BoundingBox2D spawner)
+        public void AddScorePoints(int amount)
         {
-            Vector2 nextPosition = spawner.Position;
-
-            foreach(Obstacle FO in floorObstacleList)
-            {
-                if (FO.CollidesWith(spawner))
-                {
-                    nextPosition.Y = FO.Position.Y - (FO.Height * FO.GetScale());
-                }
-            }
-
-            foreach(Obstacle CO in ceilingObstacleList)
-            {
-                if(CO.CollidesWith(spawner))
-                {
-                    
-                    float Y = CO.Position.Y - (CO.Height * CO.GetScale());
-                    if(Y <= 0.0f)
-                    {
-                        Y = CO.Position.Y + (CO.Height * CO.GetScale());
-                    }
-
-                    nextPosition.Y = Y;
-                }
-            }
-
-            foreach (AnimatedObstacle Fan in fanObstacleList)
-            {
-                if (Fan.CollidesWith(spawner))
-                {
-
-                    float Y = Fan.Position.Y - (Fan.SpriteHeight);
-                    if (Y <= 0.0f)
-                    {
-                        Y = Fan.Position.Y + (Fan.SpriteHeight);
-                    }
-
-                    nextPosition.Y = Y;
-                }
-            }
-
-            foreach (BaseGameObject GO in collectables)
-            {
-                if(GO.CollidesWith(spawner))
-                {
-                    float Y = GO.Position.Y - (GO.Height * GO.GetScale());
-                    if (Y <= 0.0f)
-                    {
-                        Y = GO.Position.Y + (GO.Height * GO.GetScale());
-                    }
-
-                    nextPosition.Y = Y;
-                }
-            }
-
-            return nextPosition;
+            Score += amount;
+            gameScore.setText("Score " + Score.ToString());
         }
     }
 
+    
 }
 

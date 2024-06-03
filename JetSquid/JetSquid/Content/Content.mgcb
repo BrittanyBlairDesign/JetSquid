@@ -153,6 +153,13 @@
 /processorParam:TextureFormat=Color
 /build:JetSquid/UI/ExitButtton.png
 
+#begin JetSquid/UI/File.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:JetSquid/UI/File.spritefont;JetSquid/UI/Font.spritefont
+
 #begin JetSquid/UI/MenuBackground.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -176,6 +183,18 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:JetSquid/UI/MenuTitleFullSzie.png
+
+#begin JetSquid/UI/ScoreFrame.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:JetSquid/UI/ScoreFrame.png
 
 #begin JetSquid/UI/StartButtton.png
 /importer:TextureImporter

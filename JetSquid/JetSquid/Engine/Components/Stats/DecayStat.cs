@@ -24,15 +24,21 @@ namespace JetSquid
         {
             if(DecayTimer <= 0.0f)
             {
-                if(isDecaying)
+                if (isDecaying)
                 {
                     DecreaseValue(DecayAmount);
-                    Trace.WriteLine("Decay Stat Value : " + _value);
+                    if (_value > _minValue)
+                    {
+                        Trace.WriteLine("Decay Stat Value : " + _value);
+                    }
                 }
                 else
                 {
                     IncreaseValue(DecayAmount);
-                    Trace.WriteLine("Recover Stat Value : " + _value);
+                    if (_value < _maxValue)
+                    {
+                        Trace.WriteLine("Recover Stat Value : " + _value);
+                    }
                 }
 
 

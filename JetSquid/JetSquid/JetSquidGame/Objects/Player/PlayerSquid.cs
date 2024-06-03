@@ -8,8 +8,9 @@ using Engine.Components.Physics;
 using Engine.Stats;
 using System.Diagnostics;
 using Engine.Particles;
-using System.Runtime.CompilerServices;
 using Engine.Components.Collision;
+using Microsoft.Xna.Framework.Content;
+
 
 
 namespace JetSquid
@@ -37,13 +38,16 @@ namespace JetSquid
         public float Scale { get { return _scale; } }
 
         // Damage
-        public Color damageColor = Color.Lerp(Color.White, Color.Transparent, 0.5f);
+        public Color damageColor = new Color(Color.Red, 0.5f);
         public float damageColorTimer;
         public float DamageColorDuration = 0.5f;
 
         // ink Refill
         private float inkCooldownTimer;
-        private float inkCooldownDuration = 0.5f;
+        private float inkCooldownDuration = 0.2f;
+
+        public bool isOnObstacle = false;
+        private Obstacle _collidingObstacle;
 
         // Constructors 
         public PlayerSquid(SpriteSheetAnimation sheetAnimation, bool debug = false, float scale = 1.0f, Emitter emitter = null)
@@ -51,7 +55,7 @@ namespace JetSquid
         {
             SetManager(frameRate);
             SetAnimations(sheetAnimation);
-            
+            AddBoundingBox(new BoundingBox2D(Position,SpriteWidth, SpriteHeight));
             _jetEmitter = emitter;
 
         }
@@ -61,7 +65,10 @@ namespace JetSquid
         {
             SetManager(frameRate);
             SetAnimations(sheetAnimation);
-            AddBoundingBox(new BoundingBox2D(startPos, SpriteWidth, SpriteHeight));
+
+            boxOffsetX = SpriteWidth / 4;
+            boxOffsetY = 0;
+            AddBoundingBox(new BoundingBox2D(startPos, SpriteWidth - (SpriteWidth / 4), SpriteHeight));
             _jetEmitter = emitter;
         }
 
@@ -94,6 +101,29 @@ namespace JetSquid
             }
 
             UpdatePosition(_movement.Update(gameTime));
+            if (_collidingObstacle != null && isOnObstacle)
+            {
+                Rectangle collidingRect = _collidingObstacle.BoundingBoxes[0].Rectangle;
+                collidingRect.Width = (int)(collidingRect.Width * _collidingObstacle.GetScale());
+                collidingRect.Height = (int)(collidingRect.Height * _collidingObstacle.GetScale());
+                if (_Debug )
+                {
+                    Trace.WriteLine(" is Position x  : " + BoundingBoxes[0].Rectangle.X);
+                    Trace.WriteLine(" is Obstacle x  : " + _collidingObstacle.Position.X);
+                    Trace.WriteLine(" obstacle rect x: " + collidingRect.X);
+                    Trace.WriteLine(" Obstacle rect w: " + _collidingObstacle.BoundingBoxes[0].Rectangle.Width);
+                    Trace.WriteLine(" scaled rect w  : " + collidingRect.Width);
+                    Trace.WriteLine(" Obstacle Width : " + (_collidingObstacle.Position.X + (int)collidingRect.Width));
+                    Trace.WriteLine(" distance x     : " + ((_collidingObstacle.Position.X + (collidingRect.Width)) - (Position.X + boxOffsetX)));
+                }
+
+                int distance = (int)((_collidingObstacle.Position.X + (collidingRect.Width)) - (Position.X + boxOffsetX));
+                if (distance <= 0)
+                {
+                    OnNotify(new JetSquidGameplayEvents.PlayerFall());
+                    _collidingObstacle = null;
+                }
+            }
         }
 
         protected override void UpdatePosition(Vector2 positionDelta)
@@ -208,10 +238,19 @@ namespace JetSquid
                 _animManager.SetNextAnimation("Walk", true);
                 _movement.ChangeDirection(Direction.STOP);
             }
+            else if (_animManager.CheckCurrentAnimation("Walk"))
+            {
+                _movement.ChangeDirection(Direction.STOP);
+            }
             else
             {
                 Ink.isDecaying = false;
             }
+        }
+
+        public virtual void SetCollidingObstacle(Obstacle other)
+        {
+            _collidingObstacle = other;
         }
 
         public override void OnNotify(BaseGameStateEvent gameEvent)
@@ -224,11 +263,18 @@ namespace JetSquid
                     || (_animationState == ePlayerAnimState.FALLING))
                        { _animationState = ePlayerAnimState.WALKING; }
                     break;
+                case JetSquidGameplayEvents.PlayerObstacleCollide:
+                    _animationState = ePlayerAnimState.WALKING;
+                    isOnObstacle = true;
+                    break;
                 case JetSquidGameplayEvents.PlayerFall:
-                    if (_animationState != ePlayerAnimState.WALKING)
+                    if (_animationState != ePlayerAnimState.FALLING)
                     { 
-                        if(Ink._value > 0 && _animationState != ePlayerAnimState.JUMPING)
-                        {  _animationState = ePlayerAnimState.FALLING;}
+                        if(_animationState != ePlayerAnimState.JUMPING || isOnObstacle)
+                        {   
+                            _animationState = ePlayerAnimState.FALLING;
+                            isOnObstacle = false;
+                        }
                     }
                     break;
                 case JetSquidGameplayEvents.PlayerJump:
@@ -249,7 +295,11 @@ namespace JetSquid
                     Ink.ResetValue();
                     break;
                 case JetSquidGameplayEvents.PlayerTakeDamage:
-                    Health.DecreaseValue(1);
+                    if(TakeDamage())
+                    {
+                        Trace.WriteLine("Player Dead");
+                        Destroy();
+                    }
                     break;
                 case JetSquidGameplayEvents.PlayerCollectHearts:
                     Health.IncreaseValue(1);
@@ -277,6 +327,7 @@ namespace JetSquid
             } 
             return true;
         }
+
     }
 }
     

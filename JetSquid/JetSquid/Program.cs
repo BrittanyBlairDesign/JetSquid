@@ -10,7 +10,7 @@ public static class Program
     [STAThread]
     static void Main()
     {
-        using (var game = new JetSquid(WIDTH, HEIGHT, new JetSquidStartState(), true))
+        using (var game = new JetSquid(WIDTH, HEIGHT, new JetSquidStartState(), false))
         game.Run();
     }
 }
